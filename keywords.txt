@@ -7,13 +7,14 @@
 #######################################
 
 Task	KEYWORD1
+FunctionTask	KEYWORD1
 TaskManager	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-Update	KEYWORD2
+Loop	KEYWORD2
 StartTask	KEYWORD2
 StopTask	KEYWORD2
 

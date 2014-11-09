@@ -26,20 +26,28 @@ License along with NeoPixel.  If not, see
 #include <pins_arduino.h>
 #endif
 
+enum TaskState
+{
+    TaskState_Stopped,
+    TaskState_Running,
+    TaskState_Stopping
+};
 
 class Task
 {
 public:
-    Task(uint32_t loopTimeMs) :
-            initialTimeMs(loopTimeMs),
-            remainingTimeMs(0)
+    Task(uint32_t timeIntervalMs) :
+            initialTimeMs(timeIntervalMs),
+            remainingTimeMs(0),
+            taskState(TaskState_Stopped)
     {
     }
+
 
 protected:
     virtual void OnStart() {};
     virtual void OnStop() {};
-    virtual void OnUpdate(uint32_t currentTickMs) {};
+    virtual void OnUpdate(uint32_t deltaTimeMs) = 0;
 
     uint32_t remainingTimeMs;
     uint32_t initialTimeMs;
@@ -47,17 +55,57 @@ protected:
 private:
     friend class TaskManager;
     Task* pNext; // next task in list
+    TaskState taskState;
+
+    void Start()
+    {
+        remainingTimeMs = initialTimeMs;
+        OnStart();
+        taskState = TaskState_Running;
+    }
+    void Stop()
+    {
+        OnStop();
+        taskState = TaskState_Stopping;
+    }
 };
+
+class FunctionTask : public Task
+{
+public:
+  typedef void (*action)(uint32_t deltaTimeMs);
+  
+  FunctionTask(action function, uint32_t loopTimeMs) : 
+    Task(loopTimeMs),
+    callback(function)
+  {};
+  
+private:
+  action callback;
+ 
+  virtual void OnUpdate(uint32_t deltaTimeMs)
+  {
+    callback(deltaTimeMs);
+  }
+};
+
+#define TASK_DECLARE_BEGIN(name) \
+    class name : public Task      \
+    {                             \
+    public:                       \
+      name(uint32_t timeIntervalMs) :                    \
+        Task(timeIntervalMs)     \
+      {};                         \
+    private:                      
+
+#define TASK_DECLARE_FUNCTION virtual void 
+
+#define TASK_DECLARE_END  };
 
 class TaskManager
 {
 public:
-    TaskManager() :
-        pFirst( NULL ),
-        pLast( NULL )
-    {
-        lastTick = millis();
-    }
+    TaskManager();
 
     void Loop(uint8_t sleepMode = SLEEP_MODE_IDLE);
     void StartTask(Task* pTask);
@@ -69,6 +117,10 @@ private:
     uint32_t lastTick;
     Task* pFirst;
     Task* pLast;
+
+    uint32_t ProcessTasks(uint32_t deltaTimeMs);
+    void RemoveStoppedTasks();
+    void WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs);
 };
 
 #endif
