@@ -223,20 +223,24 @@ void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs
         sleepDeltaTimeMs = 2000;
         sleepTime = WDTO_2S;
     }
-#ifdef WDTO_4S
-    if (nextWakeTimeMs >= 4000 && nextWakeTimeMs < 8000)
-    {
-        sleepDeltaTimeMs = 4000;
-        sleepTime = WDTO_4S;
-    }
-#endif
-#ifdef WDTO_8S
-    if (nextWakeTimeMs >= 8000)
-    {
-        sleepDeltaTimeMs = 8000;
-        sleepTime = WDTO_8S;
-    }
-#endif
+// these seem to be defined but do not function correctly
+// tested on both  Mega 2560 & Mega 328
+//#ifdef WDTO_4S
+//    if (nextWakeTimeMs >= 4000 && nextWakeTimeMs < 8000)
+//    {
+//        sleepDeltaTimeMs = 4000;
+//        sleepTime = WDTO_4S;
+//    }
+//#endif
+//#ifdef WDTO_8S
+//    if (nextWakeTimeMs >= 8000)
+//    {
+//        sleepDeltaTimeMs = 8000;
+//        sleepTime = WDTO_8S;
+//    }
+//#endif
+//Serial.println(sleepDeltaTimeMs);
+//Serial.flush();
 
     // wdt_enable(sleepTime); 
     // the above method is hardcoded to always reset, which we dont want here
