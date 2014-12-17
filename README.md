@@ -59,11 +59,13 @@ The custom task is defined in the taskBlinkLed.h tab.
 
 ### BlinkUsingCustomTask
 This demonstrates the use of the custom Task object feature of Task library. It will use a custom task to blink a LED repeatedly.
-This is inteded for adnaved level coders where the most control is required and knowledge of C++ is understood.
+This is inteded for advanced level coders where the most control is required and knowledge of C++ is understood.
 
 ## Sleep Modes
 If you want to have your project to deep sleep and use less power, you can pass in sleep modes as defined in Arduino header sleep.h to loop() that match your needs. The Idle sleep mode is used by default, which will wake up every millisecond to see if anything needs to be run.  
-The processor will be placed into the given sleep mode until the next task needs to run.  NOTE:  Other things may wake up the processor which will cause loop to be run again, but it will just re-enter sleep mode as needed.
+The processor will be placed into the given sleep mode until the next task needs to run.  
+
+NOTE:  Other things may wake up the processor which will cause loop to be run again, but it will just re-enter sleep mode as needed.
 
 ```
 void loop()  
