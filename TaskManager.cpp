@@ -9,35 +9,14 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with NeoPixel.  If not, see
-<http://www.gnu.org/licenses/>.
+See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
 #include "Task.h"
 #include <avr/power.h>
-#include <avr/wdt.h>
 
-//volatile uint8_t mcusr_mirror __attribute__ ((section (".noinit")));
-//volatile uint8_t mcusr_test __attribute__ ((section (".noinit")));
-
-//void get_mcusr(void) \
-//    __attribute__((naked)) \
-//    __attribute__((section(".init3")));
-//
-//void get_mcusr(void) 
-//{
-//    //mcusr_mirror = MCUSR;
-//    //mcusr_test = 13;
-//    MCUSR = 0;
-//    wdt_disable();
-//}
-
-// when in normal reset mode, reset if anything takes longer than 500ms
-#define WATCHDOG_TIME WDTO_500MS 
 
 ISR(WDT_vect) {} // empty but needed to so the default reset isn't called
-
 
 TaskManager::TaskManager() :
         pFirst( NULL ),
@@ -68,7 +47,7 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
-void TaskManager::Loop(uint8_t sleepMode)
+void TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag )
 {
     uint32_t currentTick = millis();
     uint32_t deltaTimeMs = currentTick - lastTick;
@@ -102,7 +81,7 @@ void TaskManager::Loop(uint8_t sleepMode)
                 // use watchdog timer for failsafe mode, 
                 // total task update time less than 500ms
                 wdt_reset();
-                wdt_enable(WATCHDOG_TIME);
+                wdt_enable(watchdogTimeOutFlag);
 
                 // just sleep
                 set_sleep_mode(SLEEP_MODE_IDLE);
@@ -115,7 +94,7 @@ void TaskManager::Loop(uint8_t sleepMode)
                 // for other modes, the millis will not continue to run
                 // so we need to the watchdog timer to awaken the cpu and
                 // also adjust timing based on the amount of sleep
-                WatchDogWakeupSleep(sleepMode, nextWakeTimeMs);
+                WatchDogWakeupSleep(sleepMode, nextWakeTimeMs, watchdogTimeOutFlag);
             }
         }
     }
@@ -198,7 +177,7 @@ void TaskManager::RemoveStoppedTasks()
     }
 }
 
-void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs)
+void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs, uint8_t watchdogTimeOutFlag)
 {
     // calc watchdog timer best fit time
     uint32_t sleepDeltaTimeMs;
@@ -260,7 +239,7 @@ void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs
 #endif
 
     // wdt_enable(sleepTime); 
-    // this is hardcoded to always reset, which we dont want
+    // the above method is hardcoded to always reset, which we dont want here
     // the following implements the trigger interrupt 
     cli();
     wdt_reset();
@@ -283,7 +262,7 @@ void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs
     MCUSR &= ~_BV(WDRF);
     WDTCSR |= _BV(WDCE) | _BV(WDE); // start timed change
     // WDTCSR = 0x00; this will disable wathdog all together
-    WDTCSR = _BV(WDE) | (WATCHDOG_TIME); // this will go back to a reset watch dog timer
+    WDTCSR = _BV(WDE) | (watchdogTimeOutFlag); // this will go back to a reset watch dog timer
     sei();
 
     // based on sleep type, we may need to fixup

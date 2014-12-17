@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map Timer
+# Syntax Coloring Map Task
 #######################################
 
 #######################################
@@ -9,6 +9,9 @@
 Task	KEYWORD1
 FunctionTask	KEYWORD1
 TaskManager	KEYWORD1
+TASK_DECLARE_BEGIN	KEYWORD1
+TASK_DECLARE_FUNCTION	KEYWORD1
+TASK_DECLARE_END	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
