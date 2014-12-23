@@ -1,10 +1,10 @@
 /*--------------------------------------------------------------------
-Timer is free software: you can redistribute it and/or modify
+Task is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
 published by the Free Software Foundation, either version 3 of
 the License, or (at your option) any later version.
 
-Timer is distributed in the hope that it will be useful,
+Task is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
@@ -19,24 +19,24 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 ISR(WDT_vect) {} // empty but needed to so the default reset isn't called
 
 TaskManager::TaskManager() :
-        pFirst( NULL ),
-        pLast( NULL )
+        _pFirstTask( NULL ),
+        _pLastTask( NULL )
 {
-    lastTick = millis();
+    _lastTick = millis();
 }
 
 void TaskManager::StartTask(Task* pTask)
 {
     // append to the list
-    if (pFirst == NULL)
+    if (_pFirstTask == NULL)
     {
-        pFirst = pTask;
-        pLast = pTask;
+        _pFirstTask = pTask;
+        _pLastTask = pTask;
     }
     else
     {
-        pLast->pNext = pTask;
-        pLast = pTask;
+        _pLastTask->pNext = pTask;
+        _pLastTask = pTask;
     }
 
     pTask->Start();
@@ -47,11 +47,11 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
-void TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag )
+bool TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag, float watchdogTimeRatio)
 {
     uint32_t currentTick = millis();
-    uint32_t deltaTimeMs = currentTick - lastTick;
-
+    uint32_t deltaTimeMs = currentTick - _lastTick;
+    bool awakeFromNonIdle = false;
     if (deltaTimeMs > 0)
     {
         uint32_t nextWakeTimeMs = ProcessTasks(deltaTimeMs);
@@ -61,9 +61,9 @@ void TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag )
         // calc how long that took to process, 
         // calc a good sleep time into deltaTimeMs
         //
-        lastTick = currentTick;
+        _lastTick = currentTick;
         currentTick = millis();
-        deltaTimeMs = currentTick - lastTick;
+        deltaTimeMs = currentTick - _lastTick;
 
         // if we have a task with less time available that what the last process pass
         // took, no need to sleep at all
@@ -72,7 +72,9 @@ void TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag )
             // idle is done different than other sleep modes,
             // due to watchdog wakeup model having a minimum sleep time of 15ms, 
             // if we are below that we always idle sleep 
-            if (sleepMode == SLEEP_MODE_IDLE || nextWakeTimeMs <= 15)
+            // Due to error in watchdog timer, its best to avoid times less than 250 
+            // as these are the error that can happen for the longest times
+            if (sleepMode == SLEEP_MODE_IDLE || nextWakeTimeMs <= 250 * watchdogTimeRatio) 
             {
                 // for idle sleep mode:
                 // due to Millis() using timer interupt at 1 ms, 
@@ -94,10 +96,12 @@ void TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag )
                 // for other modes, the millis will not continue to run
                 // so we need to the watchdog timer to awaken the cpu and
                 // also adjust timing based on the amount of sleep
-                WatchDogWakeupSleep(sleepMode, nextWakeTimeMs, watchdogTimeOutFlag);
+                WatchDogWakeupSleep(sleepMode, nextWakeTimeMs, watchdogTimeOutFlag, deltaTimeMs, watchdogTimeRatio);
+                awakeFromNonIdle = true;
             }
         }
     }
+    return awakeFromNonIdle;
 }
 
 uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
@@ -106,7 +110,7 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
 
     // Update Tasks
     //
-    Task* pIterate = pFirst;
+    Task* pIterate = _pFirstTask;
     while (pIterate != NULL)
     {
         // skip any non running tasks
@@ -136,7 +140,7 @@ void TaskManager::RemoveStoppedTasks()
 {
     // walk task list and remove stopped tasks
     //
-    Task* pIterate = pFirst;
+    Task* pIterate = _pFirstTask;
     Task* pIteratePrev = NULL;
     while (pIterate != NULL)
     {
@@ -147,24 +151,24 @@ void TaskManager::RemoveStoppedTasks()
             pIterate->taskState = TaskState_Stopped;
             pIterate->pNext = NULL; 
 
-            if (pIterate == pFirst)
+            if (pIterate == _pFirstTask)
             {
                 // first one, correct our first pointer
-                pFirst = pNext;
-                if (pIterate == pLast)
+                _pFirstTask = pNext;
+                if (pIterate == _pLastTask)
                 {
                     // last one, correct our last pointer
-                    pLast = pFirst;
+                    _pLastTask = _pFirstTask;
                 }
             }
             else
             {
                 // all others correct the previous to remove it
                 pIteratePrev->pNext = pNext;
-                if (pIterate == pLast)
+                if (pIterate == _pLastTask)
                 {
                     // last one, correct our last pointer
-                    pLast = pIteratePrev;
+                    _pLastTask = pIteratePrev;
                 }
             }
         }
@@ -177,50 +181,55 @@ void TaskManager::RemoveStoppedTasks()
     }
 }
 
-void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs, uint8_t watchdogTimeOutFlag)
+void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, 
+                                      uint32_t nextWakeTimeMs, 
+                                      uint8_t watchdogTimeOutFlag, 
+                                      uint32_t deltaTimeMs,
+                                      float watchdogTimeRatio)
 {
     // calc watchdog timer best fit time
     uint32_t sleepDeltaTimeMs;
     uint8_t sleepTime;
                 
-    if (nextWakeTimeMs < 30)
+    //if (nextWakeTimeMs < 30)
+    //{
+    //    sleepDeltaTimeMs = 15;
+    //    sleepTime = WDTO_15MS;
+    //}
+    //else if (nextWakeTimeMs < 60)
+    //{
+    //    sleepDeltaTimeMs = 30;
+    //    sleepTime = WDTO_30MS;
+    //}
+    //else if (nextWakeTimeMs < 120)
+    //{
+    //    sleepDeltaTimeMs = 60;
+    //    sleepTime = WDTO_60MS;
+    //}
+    //else if (nextWakeTimeMs < 250)
+    //{
+    //    sleepDeltaTimeMs = 120 * watchdogTimeRatio;
+    //    sleepTime = WDTO_120MS;
+    //}
+    //else 
+    if (nextWakeTimeMs < 500 * watchdogTimeRatio)
     {
-        sleepDeltaTimeMs = 15;
-        sleepTime = WDTO_15MS;
-    }
-    else if (nextWakeTimeMs < 60)
-    {
-        sleepDeltaTimeMs = 30;
-        sleepTime = WDTO_30MS;
-    }
-    else if (nextWakeTimeMs < 120)
-    {
-        sleepDeltaTimeMs = 60;
-        sleepTime = WDTO_60MS;
-    }
-    else if (nextWakeTimeMs < 250)
-    {
-        sleepDeltaTimeMs = 120;
-        sleepTime = WDTO_120MS;
-    }
-    else if (nextWakeTimeMs < 500)
-    {
-        sleepDeltaTimeMs = 250;
+        sleepDeltaTimeMs = 250 * watchdogTimeRatio;
         sleepTime = WDTO_250MS;
     }
-    else if (nextWakeTimeMs < 1000)
+    else if (nextWakeTimeMs < 1000 * watchdogTimeRatio)
     {
-        sleepDeltaTimeMs = 500;
+        sleepDeltaTimeMs = 500 * watchdogTimeRatio;
         sleepTime = WDTO_500MS;
     }
-    else if (nextWakeTimeMs < 2000)
+    else if (nextWakeTimeMs < 2000 * watchdogTimeRatio)
     {
-        sleepDeltaTimeMs = 1000;
+        sleepDeltaTimeMs = 1000 * watchdogTimeRatio;
         sleepTime = WDTO_1S;
     }
     else // if (nextWakeTimeMs < 4000)
     {
-        sleepDeltaTimeMs = 2000;
+        sleepDeltaTimeMs = 2000 * watchdogTimeRatio;
         sleepTime = WDTO_2S;
     }
 // these seem to be defined but do not function correctly
@@ -274,5 +283,5 @@ void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, uint32_t nextWakeTimeMs
     // been stopped
     // FUTURE: If wake was caused by external interrupts, 
     // there is no way to ratify millis() so what do we do?
-    lastTick -= sleepDeltaTimeMs;
+    _lastTick = millis() - (sleepDeltaTimeMs + deltaTimeMs);
 }

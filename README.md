@@ -90,3 +90,25 @@ void loop()
 ## Multiple Tasks are no problem
 While the samples show simple examples, the limit to the number of tasks is based on memory and the time spent in the active update calls.
 You can have one task blinking an LED, while another task is samples a analog in and sets PWM output.  Just keep the work inside each update call to the minimum needed for that time period and set the time cycle on the task to an appropriet value.
+
+## Long cycle tasks with deep sleep modes
+When you use a sleep mode other than idle and your tasks have a timer set on them greater 250ms; then the Arduino is will be put into the deep sleep modes.  But it will be periodically woke up to update the timer and this process relies on the Watchdog timer accuracy.
+The problem is the watchdog timer accuracy varies due to many factors.  If you ware finding that the long cycle tasks are taking longer than they should; you can modify the third parameter to loop function call, the watchdogTimeRatio.
+
+Increasing watchdogTimeRatio from the default will adjust the amount of time spent in sleep downward; thus fixing the tasks that are happening too late.
+
+```
+void loop()  
+{  
+  taskManager.Loop(SLEEP_MODE_PWD_DOWN, WDTO_500MS, 1.09); // increase the watchdogTimeRatio to adjust for slow watchdogTimer  
+}  
+```
+
+Decreasing watchdogTimeRatio from the default will adjust the amount of time spent in sleep upward; thus fixing the tasks that are happening too soon.
+
+```
+void loop()  
+{  
+  taskManager.Loop(SLEEP_MODE_PWD_DOWN, WDTO_500MS, 1.078); // increase the watchdogTimeRatio to adjust for slow watchdogTimer  
+}  
+```
