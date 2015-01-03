@@ -5,7 +5,7 @@ Arduino Nonpreemptive multitasking library
 Clone this into your Arduino\Library folder.
 
 For a good starting point at understanding the direction of this library, please read https://learn.adafruit.com/multi-tasking-the-arduino-part-1?view=all.
-This library was not based on that work though, but they share a common goals.
+This library was not based on that work though, but they share common goals.
 
 NOTE: Avoid the use of Delay in all high level code as the tasks timing should be used to replace it.
 
@@ -54,18 +54,19 @@ The tasks will continously toggle their running state handing off to the other t
 
 ### BlinkUsingTaskMacros
 This demonstrates the use of the Task macros feature of Task library. It will use a custom tasks defined using the helper macros to to blink a LED repeatedly.
-This is intended for intermediate level coders where more control is needed.  This exposes to the developer the fuctions that are called when the task is started and stopped along with updated.
+This is intended for intermediate level coders where more control is needed.  This exposes to the developer the functions that are called when the task is started and stopped along with updated.
 The custom task is defined in the taskBlinkLed.h tab.
 
 ### BlinkUsingCustomTask
 This demonstrates the use of the custom Task object feature of Task library. It will use a custom task to blink a LED repeatedly.
-This is inteded for advanced level coders where the most control is required and knowledge of C++ is understood.
+This is intended for advanced level coders where the most control is required and knowledge of C++ is understood.
 
-### ButtinTask
+### ButtonTask
 This demonstrates the use of the custom Task object feature of Task library.  
 It will instance two custom ButtonTasks to monitor two different pins and call back
 when they change state; with debouce and auto repeat support.  
-This requires two momentary buttons attached to any io pins and ground. One button will turn on the on board led when it is pressed down, the other button turn off the on board led when it is released. Both will send usefull information to the serial monitor. 
+This requires two momentary buttons attached to any io pins and ground. One button will turn on the on board led when it is pressed down, the other button turn off the on board led when it is released. Both will send usefull information to the serial monitor.  
+The custom task is defined in the ButtonTask.h tab.
 
 ## Sleep Modes (advanced feature)
 If you want to have your project to deep sleep and use less power, you can pass in sleep modes as defined in Arduino header sleep.h to loop() that match your needs. The Idle sleep mode is used by default, which will wake up every millisecond to see if anything needs to be run.  
@@ -83,7 +84,7 @@ NOTE:  For more advanced scenarios, you can pass in a different sleep mode to th
 
 ## WatchDog Timer is enabled
 This library will turn on the watchdog timer and by default set it too 500ms.  If any single function takes longer than 500ms, the Arduino will reset and start over.
-This is usefull where a bug in the code may cause intermittant hang.  But it requires that the developer make sure to use the Tasks to keep a single function to small atomic piece of work.
+This is usefull where a bug in the code may cause an intermittant hang.  But it requires that the developer make sure to use the Tasks to keep a single function to a small atomic piece of work.
 The length of the WatchDog Timer can be changed by passing in one of the flags defined in wdt.h for the supported timer lengths to the loop method.
 
 ```
@@ -95,7 +96,7 @@ void loop()
 
 ## Multiple Tasks are no problem
 While the samples show simple examples, the limit to the number of tasks is based on memory and the time spent in the active update calls.
-You can have one task blinking an LED, while another task is samples a analog in and sets PWM output.  Just keep the work inside each update call to the minimum needed for that time period and set the time cycle on the task to an appropriet value.
+You can have one task blinking an LED, while another task samples a analog in and sets PWM output.  Just keep the work inside each update call to the minimum needed for that time period and set the time cycle on the task to an appropriet value.
 
 ## Long cycle tasks with deep sleep modes
 When you use a sleep mode other than idle and your tasks have a timer set on them greater 250ms; then the Arduino is will be put into the deep sleep modes.  But it will be periodically woke up to update the timer and this process relies on the Watchdog timer accuracy.
