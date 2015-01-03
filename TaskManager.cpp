@@ -118,11 +118,22 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
         {
             if (pIterate->remainingTimeMs <= deltaTimeMs)
             {
+                // calc per task delta time
+                uint32_t taskDeltaTime = max(1, ((pIterate->initialTimeMs - pIterate->remainingTimeMs) + deltaTimeMs) - 1);
+
+                pIterate->OnUpdate(taskDeltaTime);
+
                 // add the initial time so we don't loose any remainders
                 pIterate->remainingTimeMs += pIterate->initialTimeMs;
-                pIterate->OnUpdate(deltaTimeMs);
+
+                // if we are still less than delta time, things are running slow
+                // so push to the next update frame
+                if (pIterate->remainingTimeMs <= deltaTimeMs)
+                {
+                    pIterate->remainingTimeMs = deltaTimeMs + 1;
+                }
             }
-                
+
             pIterate->remainingTimeMs -= deltaTimeMs;
 
             if (pIterate->remainingTimeMs < nextWakeTimeMs)

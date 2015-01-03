@@ -15,8 +15,6 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 #ifndef TASK_H
 #define TASK_H
 
-
-
 #if (ARDUINO >= 100)
 #include <Arduino.h>
 #else
