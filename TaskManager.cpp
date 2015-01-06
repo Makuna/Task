@@ -15,9 +15,6 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 #include "Task.h"
 #include <avr/power.h>
 
-
-ISR(WDT_vect) {} // empty but needed to so the default reset isn't called
-
 TaskManager::TaskManager() :
         _pFirstTask( NULL ),
         _pLastTask( NULL )
@@ -27,19 +24,25 @@ TaskManager::TaskManager() :
 
 void TaskManager::StartTask(Task* pTask)
 {
-    // append to the list
-    if (_pFirstTask == NULL)
+    if (pTask->taskState != TaskState_Running)
     {
-        _pFirstTask = pTask;
-        _pLastTask = pTask;
+        // check if it has been stopped yet as it may be just stopping
+        if (pTask->taskState == TaskState_Stopped)
+        {
+            // append to the list
+            if (_pFirstTask == NULL)
+            {
+                _pFirstTask = pTask;
+                _pLastTask = pTask;
+            }
+            else
+            {
+                _pLastTask->pNext = pTask;
+                _pLastTask = pTask;
+            }
+        }
+        pTask->Start();
     }
-    else
-    {
-        _pLastTask->pNext = pTask;
-        _pLastTask = pTask;
-    }
-
-    pTask->Start();
 }
 
 void TaskManager::StopTask(Task* pTask)
@@ -47,11 +50,11 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
-bool TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag, float watchdogTimeRatio)
+void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 {
     uint32_t currentTick = millis();
     uint32_t deltaTimeMs = currentTick - _lastTick;
-    bool awakeFromNonIdle = false;
+
     if (deltaTimeMs > 0)
     {
         uint32_t nextWakeTimeMs = ProcessTasks(deltaTimeMs);
@@ -69,39 +72,35 @@ bool TaskManager::Loop(uint8_t sleepMode, uint8_t watchdogTimeOutFlag, float wat
         // took, no need to sleep at all
         if (nextWakeTimeMs > deltaTimeMs + 1)
         {
-            // idle is done different than other sleep modes,
-            // due to watchdog wakeup model having a minimum sleep time of 15ms, 
-            // if we are below that we always idle sleep 
-            // Due to error in watchdog timer, its best to avoid times less than 250 
-            // as these are the error that can happen for the longest times
-            if (sleepMode == SLEEP_MODE_IDLE || nextWakeTimeMs <= 250 * watchdogTimeRatio) 
-            {
-                // for idle sleep mode:
-                // due to Millis() using timer interupt at 1 ms, 
-                // the cpu will be woke up by that every millisecond 
+            // for idle sleep mode:
+            // due to Millis() using timer interupt at 1 ms, 
+            // the cpu will be woke up by that every millisecond 
 
-                // use watchdog timer for failsafe mode, 
-                // total task update time less than 500ms
-                wdt_reset();
-                wdt_enable(watchdogTimeOutFlag);
+            // use watchdog timer for failsafe mode, 
+            // total task update time should be less than watchdogTimeOutFlag
+            wdt_reset();
+            wdt_enable(watchdogTimeOutFlag);
 
-                // just sleep
-                set_sleep_mode(SLEEP_MODE_IDLE);
-                sleep_enable();
-                sleep_cpu(); // will sleep in this call
-                sleep_disable(); 
-            }
-            else
-            {
-                // for other modes, the millis will not continue to run
-                // so we need to the watchdog timer to awaken the cpu and
-                // also adjust timing based on the amount of sleep
-                WatchDogWakeupSleep(sleepMode, nextWakeTimeMs, watchdogTimeOutFlag, deltaTimeMs, watchdogTimeRatio);
-                awakeFromNonIdle = true;
-            }
+            // just sleep
+            set_sleep_mode(SLEEP_MODE_IDLE);
+            sleep_enable();
+            sleep_cpu(); // will sleep in this call
+            sleep_disable(); 
         }
     }
-    return awakeFromNonIdle;
+}
+
+void TaskManager::EnterSleep(uint8_t sleepMode)
+{
+    // disable watchdog so it doesn't wake us up
+    wdt_reset();
+    wdt_disable();
+
+    // prepare sleep
+    set_sleep_mode(sleepMode);
+    sleep_enable();
+    sleep_cpu(); // will sleep in this call
+    sleep_disable();
 }
 
 uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
@@ -190,109 +189,4 @@ void TaskManager::RemoveStoppedTasks()
         }
         pIterate = pNext; // iterate to the next
     }
-}
-
-void TaskManager::WatchDogWakeupSleep(uint8_t sleepMode, 
-                                      uint32_t nextWakeTimeMs, 
-                                      uint8_t watchdogTimeOutFlag, 
-                                      uint32_t deltaTimeMs,
-                                      float watchdogTimeRatio)
-{
-    // calc watchdog timer best fit time
-    uint32_t sleepDeltaTimeMs;
-    uint8_t sleepTime;
-                
-    //if (nextWakeTimeMs < 30)
-    //{
-    //    sleepDeltaTimeMs = 15;
-    //    sleepTime = WDTO_15MS;
-    //}
-    //else if (nextWakeTimeMs < 60)
-    //{
-    //    sleepDeltaTimeMs = 30;
-    //    sleepTime = WDTO_30MS;
-    //}
-    //else if (nextWakeTimeMs < 120)
-    //{
-    //    sleepDeltaTimeMs = 60;
-    //    sleepTime = WDTO_60MS;
-    //}
-    //else if (nextWakeTimeMs < 250)
-    //{
-    //    sleepDeltaTimeMs = 120 * watchdogTimeRatio;
-    //    sleepTime = WDTO_120MS;
-    //}
-    //else 
-    if (nextWakeTimeMs < 500 * watchdogTimeRatio)
-    {
-        sleepDeltaTimeMs = 250 * watchdogTimeRatio;
-        sleepTime = WDTO_250MS;
-    }
-    else if (nextWakeTimeMs < 1000 * watchdogTimeRatio)
-    {
-        sleepDeltaTimeMs = 500 * watchdogTimeRatio;
-        sleepTime = WDTO_500MS;
-    }
-    else if (nextWakeTimeMs < 2000 * watchdogTimeRatio)
-    {
-        sleepDeltaTimeMs = 1000 * watchdogTimeRatio;
-        sleepTime = WDTO_1S;
-    }
-    else // if (nextWakeTimeMs < 4000)
-    {
-        sleepDeltaTimeMs = 2000 * watchdogTimeRatio;
-        sleepTime = WDTO_2S;
-    }
-// these seem to be defined but do not function correctly
-// tested on both  Mega 2560 & Mega 328
-//#ifdef WDTO_4S
-//    if (nextWakeTimeMs >= 4000 && nextWakeTimeMs < 8000)
-//    {
-//        sleepDeltaTimeMs = 4000;
-//        sleepTime = WDTO_4S;
-//    }
-//#endif
-//#ifdef WDTO_8S
-//    if (nextWakeTimeMs >= 8000)
-//    {
-//        sleepDeltaTimeMs = 8000;
-//        sleepTime = WDTO_8S;
-//    }
-//#endif
-//Serial.println(sleepDeltaTimeMs);
-//Serial.flush();
-
-    // wdt_enable(sleepTime); 
-    // the above method is hardcoded to always reset, which we dont want here
-    // the following implements the trigger interrupt 
-    cli();
-    wdt_reset();
-    MCUSR &= ~_BV(WDRF);
-    WDTCSR |= _BV(WDCE) | _BV(WDE); // start timed change
-    WDTCSR = _BV(WDIE) | (sleepTime);
-    sei();
-
-    // enter sleep
-    set_sleep_mode(sleepMode);
-    sleep_enable();
-    sleep_cpu(); // will sleep in this call
-    sleep_disable(); 
-
-    // wdt_disable();
-    // protocol requires a reset call before clearing,
-    // all under interupts being off
-    cli();
-    wdt_reset();
-    MCUSR &= ~_BV(WDRF);
-    WDTCSR |= _BV(WDCE) | _BV(WDE); // start timed change
-    // WDTCSR = 0x00; this will disable wathdog all together
-    WDTCSR = _BV(WDE) | (watchdogTimeOutFlag); // this will go back to a reset watch dog timer
-    sei();
-
-    // based on sleep type, we may need to fixup
-    // the time values as the timer for millis() may have
-    // been stopped
-    // FUTURE: If wake was caused by external interrupts, 
-    // there is no way to ratify millis() so what do we do?
-    _lastTick = millis() - (sleepDeltaTimeMs + deltaTimeMs);
 }

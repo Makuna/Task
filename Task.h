@@ -66,6 +66,7 @@ private:
     }
 };
 
+#include "MessageTask.h"
 #include "FunctionTask.h"
 #include "TaskMacros.h"
 #include "TaskManager.h"

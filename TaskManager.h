@@ -23,9 +23,17 @@ class TaskManager
 public:
     TaskManager();
 
-    bool Loop(uint8_t sleepMode = SLEEP_MODE_IDLE, uint8_t watchdogTimeOutFlag = WDTO_500MS, float watchdogTimeRatio = 1.084);
+    void Loop(uint8_t watchdogTimeOutFlag = WDTO_500MS);
+
     void StartTask(Task* pTask);
     void StopTask(Task* pTask);
+    void ResetTask(Task* pTask)
+    {
+        StopTask(pTask);
+        StartTask(pTask);
+    }
+
+    void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
 
 private:
     friend class Task;

@@ -63,24 +63,40 @@ This is intended for advanced level coders where the most control is required an
 
 ### ButtonTask
 This demonstrates the use of the custom Task object feature of Task library.  
-It will instance two custom ButtonTasks to monitor two different pins and call back
-when they change state; with debouce and auto repeat support.  
+It will instance two custom ButtonTasks to monitor two different pins and call back when they change state; with debouce and auto repeat support.  
+
 This requires two momentary buttons attached to any io pins and ground. One button will turn on the on board led when it is pressed down, the other button turn off the on board led when it is released. Both will send usefull information to the serial monitor.  
 The custom task is defined in the ButtonTask.h tab.
 
+### ButtonInterrupt
+This demonstrates the use of the Sleep feature of the Task library.
+It will instance two custom ButtonTasks to monitor two different pins and call back when they change state; with debouce and auto repeat support.
+An external interrupt is tied to the buttons to wake the Arduino up on any press.
+There is two tasks implementing a LED Blink showing a "heartbeat" that can only run when awake.
+There is a task that will put the Arduino to a deep sleep 15 seconds after a button press.
+
+This requires two momentary buttons attached anu io pins and ground.
+This requires a diode per button be attached between the button pin and a single external interrupt pin.  The cathode (black band) end of the diode is attached to the button pin; the anode to the interrupt pin.
+
+### MessageTask
+This demonstrates the use of the message passing feature of Task library.
+It will instance two custom ButtonTasks to monitor two different pins and they will send messages when they change state. It will also have tasks that provide a heartbeat message.
+
+This requires two momentary buttons attached between pins 4 & 5 and ground, you can change the pins to any digital pin 
+
 ## Sleep Modes (advanced feature)
-If you want to have your project to deep sleep and use less power, you can pass in sleep modes as defined in Arduino header sleep.h to loop() that match your needs. The Idle sleep mode is used by default, which will wake up every millisecond to see if anything needs to be run.  
-The processor will be placed into the given sleep mode until the next task needs to run.  
-
-NOTE:  Other things may wake up the processor which will cause loop to be run again, but it will just re-enter sleep mode as needed.
+If you want to have your project to deep sleep and use less power, you can call the EnterSleep method and pass in a sleep modes as defined in Arduino header sleep.h. The default is SLEEP_MODE_PWR_DOWN if you dont provide one. 
+The processor will be placed into the given sleep mode until it is woke up.  Different sleep modes have different actions that can cause it to wake.  But external interrupts will wake up the Arduino for all sleep modes.  
 
 ```
-void loop()  
-{  
-  taskManager.Loop(SLEEP_MODE_PWD_DOWN);  
-}  
+    Serial.println("sleep");
+    Serial.flush(); // flush is important, we are about to sleep the complete Arduino
+
+    taskManager.EnterSleep(); // this will not return until something wakes the Arduino
+
+    Serial.println("AWAKE");
+    Serial.flush(); 
 ```
-NOTE:  For more advanced scenarios, you can pass in a different sleep mode to the Loop() everytime you call it.  
 
 ## WatchDog Timer is enabled
 This library will turn on the watchdog timer and by default set it too 500ms.  If any single function takes longer than 500ms, the Arduino will reset and start over.
@@ -90,32 +106,10 @@ The length of the WatchDog Timer can be changed by passing in one of the flags d
 ```
 void loop()  
 {  
-  taskManager.Loop(SLEEP_MODE_IDLE, WDTO_1S); // use one second watch dog timer  
+  taskManager.Loop(WDTO_1S); // use one second watch dog timer  
 }  
 ```
 
 ## Multiple Tasks are no problem
 While the samples show simple examples, the limit to the number of tasks is based on memory and the time spent in the active update calls.
 You can have one task blinking an LED, while another task samples a analog in and sets PWM output.  Just keep the work inside each update call to the minimum needed for that time period and set the time cycle on the task to an appropriet value.
-
-## Long cycle tasks with deep sleep modes
-When you use a sleep mode other than idle and your tasks have a timer set on them greater 250ms; then the Arduino is will be put into the deep sleep modes.  But it will be periodically woke up to update the timer and this process relies on the Watchdog timer accuracy.
-The problem is the watchdog timer accuracy varies due to many factors.  If you ware finding that the long cycle tasks are taking longer than they should; you can modify the third parameter to loop function call, the watchdogTimeRatio.
-
-Increasing watchdogTimeRatio from the default will adjust the amount of time spent in sleep downward; thus fixing the tasks that are happening too late.
-
-```
-void loop()  
-{  
-  taskManager.Loop(SLEEP_MODE_PWD_DOWN, WDTO_500MS, 1.09); // increase the watchdogTimeRatio to adjust for slow watchdogTimer  
-}  
-```
-
-Decreasing watchdogTimeRatio from the default will adjust the amount of time spent in sleep upward; thus fixing the tasks that are happening too soon.
-
-```
-void loop()  
-{  
-  taskManager.Loop(SLEEP_MODE_PWD_DOWN, WDTO_500MS, 1.078); // increase the watchdogTimeRatio to adjust for slow watchdogTimer  
-}  
-```

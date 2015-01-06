@@ -20,6 +20,7 @@ TASK_DECLARE_END	KEYWORD1
 Loop	KEYWORD2
 StartTask	KEYWORD2
 StopTask	KEYWORD2
+ResetTask	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
