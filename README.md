@@ -71,11 +71,11 @@ The custom task is defined in the ButtonTask.h tab.
 ### ButtonInterrupt
 This demonstrates the use of the Sleep feature of the Task library.
 It will instance two custom ButtonTasks to monitor two different pins and call back when they change state; with debouce and auto repeat support.
-An external interrupt is tied to the buttons to wake the Arduino up on any press.
-There is two tasks implementing a LED Blink showing a "heartbeat" that can only run when awake.
-There is a task that will put the Arduino to a deep sleep 15 seconds after a button press.
+An external interrupt is tied to the buttons to wake the Arduino up on any button press.
+There are two tasks implementing a LED Blink showing a "heartbeat" that can only run when awake.
+There is a task that will put the Arduino into a deep sleep 15 seconds after any button press.
 
-This requires two momentary buttons attached anu io pins and ground.
+This requires two momentary buttons attached any io pins and ground.
 This requires a diode per button be attached between the button pin and a single external interrupt pin.  The cathode (black band) end of the diode is attached to the button pin; the anode to the interrupt pin.
 
 ### MessageTask
