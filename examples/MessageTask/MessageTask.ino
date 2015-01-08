@@ -27,8 +27,8 @@ TaskManager taskManager;
 MainTask mainTask;
 ButtonTask buttonATask(&mainTask, AButtonPin); 
 ButtonTask buttonBTask(&mainTask, BButtonPin); 
-FunctionTask heartBeatOnTask(OnHeartBeatOn, 400); 
-FunctionTask heartBeatOffTask(OnHeartBeatOff, 600); 
+FunctionTask heartBeatOnTask(OnHeartBeatOn, MsToTaskTime(400)); 
+FunctionTask heartBeatOffTask(OnHeartBeatOff, MsToTaskTime(600)); 
 
 void setup()
 {
@@ -47,7 +47,7 @@ void loop()
     taskManager.Loop();
 }
 
-void OnHeartBeatOn(uint32_t deltaTimeMs)
+void OnHeartBeatOn(uint32_t deltaTime)
 {
     HeartbeatMessage message(true);
     if (!mainTask.SendAsyncMessage(message))
@@ -60,7 +60,7 @@ void OnHeartBeatOn(uint32_t deltaTimeMs)
     taskManager.StartTask(&heartBeatOffTask); 
 }
 
-void OnHeartBeatOff(uint32_t deltaTimeMs)
+void OnHeartBeatOff(uint32_t deltaTime)
 {
     HeartbeatMessage message(false);
     if (!mainTask.SendAsyncMessage(message))

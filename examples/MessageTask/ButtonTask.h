@@ -25,7 +25,7 @@ class ButtonTask : public Task
 {
 public:
     ButtonTask(MessageTask* pMessageTarget, uint8_t pin) :
-        Task(3), // check every three millisecond, 1-10 ms should be ok
+        Task(MsToTaskTime(3)), // check every three millisecond, 1-10 ms should be ok
         _buttonPin(pin),
         _pMessageTarget(pMessageTarget)
     { 
@@ -46,8 +46,9 @@ private:
         _state = ButtonState_Released;
     }
 
-    virtual void OnUpdate(uint32_t deltaTimeMs)
+    virtual void OnUpdate(uint32_t deltaTime)
     {
+        uint16_t deltaTimeMs = TaskTimeToMs(deltaTime);
         ButtonState pinState = (digitalRead(_buttonPin) == LOW) ? ButtonState_Pressed : ButtonState_Released;
 
         if (pinState != (_state & ButtonState_Pressed))

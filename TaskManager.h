@@ -34,6 +34,10 @@ public:
     }
 
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
+    uint32_t CurrentTaskTime()
+    {
+        return _lastTick;
+    }
 
 private:
     friend class Task;
@@ -42,13 +46,8 @@ private:
     Task* _pFirstTask;
     Task* _pLastTask;
 
-    uint32_t ProcessTasks(uint32_t deltaTimeMs);
+    uint32_t ProcessTasks(uint32_t deltaTime);
     void RemoveStoppedTasks();
-    void WatchDogWakeupSleep(uint8_t sleepMode, 
-            uint32_t nextWakeTimeMs, 
-            uint8_t watchdogTimeOutFlag,
-            uint32_t deltaTimeMs,
-            float watchdogTimeRatio);
 };
 
 #endif

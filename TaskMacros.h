@@ -19,8 +19,8 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
     class name : public Task      \
     {                             \
     public:                       \
-      name(uint32_t timeIntervalMs) :                    \
-        Task(timeIntervalMs)     \
+      name(uint32_t timeInterval) :                    \
+        Task(timeInterval)     \
       {};                         \
     private:                      
 

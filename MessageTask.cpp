@@ -20,6 +20,9 @@ bool MessageTask::SendAsyncMessage(const Message& message)
 
     if (message.Size <= _messageSize)
     {
+        // this maybe called from within an interrupt, so it needs to track
+        // the current state and reset that instead of blindly enabling interrupts
+        // at the end of this routine
         uint8_t oldSREG = SREG;
         cli();
 

@@ -14,17 +14,17 @@
 
 TaskManager taskManager;
 
-TaskBlinkLed taskBlinkLed(LedPin, 1000); // every second it will turn on/off the LED
+TaskBlinkLed taskBlinkLed(LedPin, MsToTaskTime(1000)); // every second it will turn on/off the LED
 
 
 void setup()
 {
-  taskManager.StartTask(&taskBlinkLed); // start the blink task
+    taskManager.StartTask(&taskBlinkLed); // start the blink task
 }
 
 void loop()
 {
-  taskManager.Loop();
+    taskManager.Loop();
 }
 
 

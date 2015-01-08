@@ -11,32 +11,32 @@ int ledPin = 13;
 
 TaskManager taskManager;
 
-FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, 400); // turn on the led in 400ms
-FunctionTask taskTurnLedOff(OnUpdateTaskLedOff,600); // turn off the led in 600ms
+FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, MsToTaskTime(400)); // turn on the led in 400ms
+FunctionTask taskTurnLedOff(OnUpdateTaskLedOff, MsToTaskTime(600)); // turn off the led in 600ms
 
 void setup()
 {
-  pinMode(ledPin, OUTPUT);
+    pinMode(ledPin, OUTPUT);
   
-  taskManager.StartTask(&taskTurnLedOn); // start with turning it on
+    taskManager.StartTask(&taskTurnLedOn); // start with turning it on
 }
 
 void loop()
 {
-  taskManager.Loop();
+    taskManager.Loop();
 }
 
-void OnUpdateTaskLedOn(uint32_t deltaTimeMs)
+void OnUpdateTaskLedOn(uint32_t deltaTime)
 {
-  digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-  taskManager.StopTask(&taskTurnLedOn); // stop trying to turn the LED On
-  taskManager.StartTask(&taskTurnLedOff); // start the task to turn the LED off
+    digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
+    taskManager.StopTask(&taskTurnLedOn); // stop trying to turn the LED On
+    taskManager.StartTask(&taskTurnLedOff); // start the task to turn the LED off
 }
 
-void OnUpdateTaskLedOff(uint32_t deltaTimeMs)
+void OnUpdateTaskLedOff(uint32_t deltaTime)
 {
-  digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
-  taskManager.StopTask(&taskTurnLedOff); // stop trying to turn the LED Off
-  taskManager.StartTask(&taskTurnLedOn); // start the task to turn the LED On
+    digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
+    taskManager.StopTask(&taskTurnLedOff); // stop trying to turn the LED Off
+    taskManager.StartTask(&taskTurnLedOn); // start the task to turn the LED On
 }
 
