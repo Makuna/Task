@@ -11,7 +11,7 @@
 
 TaskManager taskManager;
 
-TaskBlinkLed taskBlinkLed(1000); // every second it will turn on/off the LED
+TaskBlinkLed taskBlinkLed(MsToTaskTime(1000)); // every second it will turn on/off the LED
 
 
 void setup()

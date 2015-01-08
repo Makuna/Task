@@ -14,18 +14,54 @@ Create a directory in your Arduino\Library folder named "Task"
 Clone (Git) this project into that folder.  
 It should now show up in the import list.
 
+## TaskTime
+### Conversion macros
+The resolution of the task interval is based on millis() or micros().  The default is millis().  To allow the code to easily switch, callers should use the macros to wrap constants.
+
+```
+uint32_t taskTime = MsToTaskTime(400); // 400 ms
+uint32_t timeMilliseconds = TaskTimeToMs(taskTime);
+uint32_t timeMicroseconds = TaskTimeToUs(taskTime);
+taskTime = UsToTaskTime(400000) // 4000000us, 400ms also
+```
+This is important for passing in time interval when the task is created, and when handling the deltaTime parameter in the Update method.
+
+```
+FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, MsToTaskTime(400)); 400ms
+
+void OnUpdateTaskLedOn(uint32_t deltaTime)
+{
+	uint32_t deltaTimeMs = TaskTimeToMs(deltaTime);
+}
+```
+### Getting the current Update Time
+If you call millis() or micros(), you will get the time as it is right then.  If you want relative time from update to update, you can get this from the TaskManager.  This value will change only on the update interval, and should only be used within an update call.
+```
+	uint32_t updateTaskTime = taskManager.CurrentTaskTime();
+```
+
+### Using higher resolution time
+To switch the library to use a higher resolution interval (microseconds), you need to edit the Task.h file in the library/Task folder and uncomment the following line.
+
+```
+//#define TASK_MICRO_RESOLUTION
+```
+If you have used the macros mentioned above, your project should compile and run, but now at a higher resoltion.
+By doing this, the longest time a task interval can be is just over 70 minutes.
+TaskTime values will now be microseconds, but the time interval may still be larger as some Arduinos will give values that increment by 2, 4, or even 8.
+
 ## Samples
 ### BlinkUsingTaskFunctions
 This demonstrates the use of the FunctionTask feature of Task library. It will use two FunctionTasks to to blink a LED repeatedly, by alternating which task is active and flpping the state of the LED pin.
 In this example, tasks are declared at the top and are associated with a function that will be run when the task gets called to update.
 
 ```
-FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, 400); // turn on the led in 400ms
-FunctionTask taskTurnLedOff(OnUpdateTaskLedOff,600); // turn off the led in 600ms
+FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, MsToTaskTime(400)); // turn on the led in 400ms
+FunctionTask taskTurnLedOff(OnUpdateTaskLedOff, MsToTaskTime(600)); // turn off the led in 600ms
 
 ...
 
-void OnUpdateTaskLedOn(uint32_t deltaTimeMs)
+void OnUpdateTaskLedOn(uint32_t deltaTime)
 {
   digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
   taskManager.StopTask(&taskTurnLedOn); // stop trying to turn the LED On
@@ -33,7 +69,7 @@ void OnUpdateTaskLedOn(uint32_t deltaTimeMs)
 }
 
 
-void OnUpdateTaskLedOff(uint32_t deltaTimeMs)
+void OnUpdateTaskLedOff(uint32_t deltaTime)
 {
   digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
   taskManager.StopTask(&taskTurnLedOff); // stop trying to turn the LED Off
@@ -75,7 +111,7 @@ An external interrupt is tied to the buttons to wake the Arduino up on any press
 There is two tasks implementing a LED Blink showing a "heartbeat" that can only run when awake.
 There is a task that will put the Arduino to a deep sleep 15 seconds after a button press.
 
-This requires two momentary buttons attached anu io pins and ground.
+This requires two momentary buttons attached any io pins and ground.
 This requires a diode per button be attached between the button pin and a single external interrupt pin.  The cathode (black band) end of the diode is attached to the button pin; the anode to the interrupt pin.
 
 ### MessageTask

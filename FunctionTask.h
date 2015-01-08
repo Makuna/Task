@@ -18,19 +18,19 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 class FunctionTask : public Task
 {
 public:
-  typedef void (*action)(uint32_t deltaTimeMs);
+  typedef void (*action)(uint32_t deltaTime);
   
-  FunctionTask(action function, uint32_t loopTimeMs) : 
-    Task(loopTimeMs),
-    callback(function)
+  FunctionTask(action function, uint32_t timeInterval) :
+      Task(timeInterval),
+        _callback(function)
   {};
   
 private:
-  action callback;
+  action _callback;
  
-  virtual void OnUpdate(uint32_t deltaTimeMs)
+  virtual void OnUpdate(uint32_t deltaTime)
   {
-    callback(deltaTimeMs);
+    _callback(deltaTime);
   }
 };
 

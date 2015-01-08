@@ -7,11 +7,10 @@
 #######################################
 
 Task	KEYWORD1
+MessageTask	KEYWORD1
 FunctionTask	KEYWORD1
 TaskManager	KEYWORD1
-TASK_DECLARE_BEGIN	KEYWORD1
-TASK_DECLARE_FUNCTION	KEYWORD1
-TASK_DECLARE_END	KEYWORD1
+
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -21,8 +20,20 @@ Loop	KEYWORD2
 StartTask	KEYWORD2
 StopTask	KEYWORD2
 ResetTask	KEYWORD2
+EnterSleep	KEYWORD2
+CurrentTaskTime	KEYWORD2
+GetTaskTime	KEYWORD2
+MsToTaskTime	KEYWORD2
+UsToTaskTime	KEYWORD2
+TaskTimeToMs	KEYWORD2
+TaskTimeToUs	KEYWORD2
+TASK_DECLARE_BEGIN	KEYWORD2
+TASK_DECLARE_FUNCTION	KEYWORD2
+TASK_DECLARE_END	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
+TaskTimePerMs	LITERAL1
+TaskTimeAccuracy	LITERAL1

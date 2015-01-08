@@ -42,8 +42,10 @@ public:
 protected:
     const uint8_t  _messageSize;
 
-    MessageTask(uint8_t maxMessageSize, uint8_t maxQueueCount = 6) :
-        Task(1),
+    MessageTask(uint8_t maxMessageSize, 
+            uint8_t maxQueueCount = 6, 
+            uint32_t loopTime = TaskTimePerMs) :
+        Task(loopTime),
         _queueCount(maxQueueCount),
         _messageSize(maxMessageSize),
         _indexFront(0),

@@ -23,7 +23,7 @@ private:
         pinMode(LedPin, OUTPUT);
     }
 
-    virtual void OnUpdate(uint32_t deltaTimeMs)
+    virtual void OnUpdate(uint32_t deltaTime)
     {
         uint8_t buffer[MaxMessageSize];
 

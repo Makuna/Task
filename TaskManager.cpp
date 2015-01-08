@@ -19,15 +19,15 @@ TaskManager::TaskManager() :
         _pFirstTask( NULL ),
         _pLastTask( NULL )
 {
-    _lastTick = millis();
+    _lastTick = GetTaskTime();
 }
 
 void TaskManager::StartTask(Task* pTask)
 {
-    if (pTask->taskState != TaskState_Running)
+    if (pTask->_taskState != TaskState_Running)
     {
         // check if it has been stopped yet as it may be just stopping
-        if (pTask->taskState == TaskState_Stopped)
+        if (pTask->_taskState == TaskState_Stopped)
         {
             // append to the list
             if (_pFirstTask == NULL)
@@ -37,7 +37,7 @@ void TaskManager::StartTask(Task* pTask)
             }
             else
             {
-                _pLastTask->pNext = pTask;
+                _pLastTask->_pNext = pTask;
                 _pLastTask = pTask;
             }
         }
@@ -52,25 +52,19 @@ void TaskManager::StopTask(Task* pTask)
 
 void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 {
-    uint32_t currentTick = millis();
-    uint32_t deltaTimeMs = currentTick - _lastTick;
+    uint32_t currentTick = GetTaskTime();
+    uint32_t deltaTime = currentTick - _lastTick;
 
-    if (deltaTimeMs > 0)
+    if (deltaTime >= TaskTimeAccuracy)
     {
-        uint32_t nextWakeTimeMs = ProcessTasks(deltaTimeMs);
+        _lastTick = currentTick; // update before calling process
+        uint32_t nextWakeTime = ProcessTasks(deltaTime);
 
         RemoveStoppedTasks();
   
-        // calc how long that took to process, 
-        // calc a good sleep time into deltaTimeMs
-        //
-        _lastTick = currentTick;
-        currentTick = millis();
-        deltaTimeMs = currentTick - _lastTick;
-
-        // if we have a task with less time available that what the last process pass
-        // took, no need to sleep at all
-        if (nextWakeTimeMs > deltaTimeMs + 1)
+        // if the next task has more time available than the next
+        // millisecond interupt, then sleep
+        if (nextWakeTime > TaskTimePerMs)
         {
             // for idle sleep mode:
             // due to Millis() using timer interupt at 1 ms, 
@@ -83,7 +77,15 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 
             // just sleep
             set_sleep_mode(SLEEP_MODE_IDLE);
+            cli();
             sleep_enable();
+#if defined(BODSE)
+            // lower power trick 
+            // sleep_bod_disable() - i have seen this method called, but can't find it
+            MCUCR |= _BV(BODS) | _BV(BODSE);  // turn on brown-out enable select
+            MCUCR &= ~_BV(BODSE);        // this must be done within 4 clock cycles of above
+#endif
+            sei();
             sleep_cpu(); // will sleep in this call
             sleep_disable(); 
         }
@@ -98,14 +100,28 @@ void TaskManager::EnterSleep(uint8_t sleepMode)
 
     // prepare sleep
     set_sleep_mode(sleepMode);
+    cli();
     sleep_enable();
+
+#if defined(BODSE)
+    // lower power trick 
+    // sleep_bod_disable() - i have seen this method called, but can't find it
+    MCUCR |= _BV(BODS) | _BV(BODSE);  // turn on brown-out enable select
+    MCUCR &= ~_BV(BODSE);        // this must be done within 4 clock cycles of above
+#endif
+
+    sei();
     sleep_cpu(); // will sleep in this call
     sleep_disable();
+
+    // enable watch dog after wake up
+    wdt_reset();
+    wdt_enable(WDTO_500MS);
 }
 
-uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
+uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
 {
-    uint32_t nextWakeTimeMs = ((uint32_t)-1); // MAX_UINT32
+    uint32_t nextWakeTime = ((uint32_t)-1); // MAX_UINT32
 
     // Update Tasks
     //
@@ -113,37 +129,39 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTimeMs)
     while (pIterate != NULL)
     {
         // skip any non running tasks
-        if (pIterate->taskState == TaskState_Running)
+        if (pIterate->_taskState == TaskState_Running)
         {
-            if (pIterate->remainingTimeMs <= deltaTimeMs)
+            if (pIterate->_remainingTime <= deltaTime)
             {
                 // calc per task delta time
-                uint32_t taskDeltaTime = max(1, ((pIterate->initialTimeMs - pIterate->remainingTimeMs) + deltaTimeMs) - 1);
+                uint32_t taskDeltaTime = pIterate->_timeInterval - pIterate->_remainingTime;
+                taskDeltaTime += deltaTime;
 
                 pIterate->OnUpdate(taskDeltaTime);
 
                 // add the initial time so we don't loose any remainders
-                pIterate->remainingTimeMs += pIterate->initialTimeMs;
+                pIterate->_remainingTime += pIterate->_timeInterval;
 
                 // if we are still less than delta time, things are running slow
                 // so push to the next update frame
-                if (pIterate->remainingTimeMs <= deltaTimeMs)
+                if (pIterate->_remainingTime <= deltaTime)
                 {
-                    pIterate->remainingTimeMs = deltaTimeMs + 1;
+                    pIterate->_remainingTime = deltaTime + TaskTimeAccuracy;
                 }
             }
 
-            pIterate->remainingTimeMs -= deltaTimeMs;
+            uint32_t newRemainingTime = pIterate->_remainingTime - deltaTime;
+            pIterate->_remainingTime = newRemainingTime;
 
-            if (pIterate->remainingTimeMs < nextWakeTimeMs)
+            if (newRemainingTime < nextWakeTime)
             {
-                nextWakeTimeMs = pIterate->remainingTimeMs;
+                nextWakeTime = newRemainingTime;
             }
         }
 
-        pIterate = pIterate->pNext;
+        pIterate = pIterate->_pNext;
     }
-    return nextWakeTimeMs;
+    return nextWakeTime;
 }
 
 void TaskManager::RemoveStoppedTasks()
@@ -154,12 +172,12 @@ void TaskManager::RemoveStoppedTasks()
     Task* pIteratePrev = NULL;
     while (pIterate != NULL)
     {
-        Task* pNext = pIterate->pNext;
-        if (pIterate->taskState == TaskState_Stopping)
+        Task* pNext = pIterate->_pNext;
+        if (pIterate->_taskState == TaskState_Stopping)
         {
             // Remove it
-            pIterate->taskState = TaskState_Stopped;
-            pIterate->pNext = NULL; 
+            pIterate->_taskState = TaskState_Stopped;
+            pIterate->_pNext = NULL; 
 
             if (pIterate == _pFirstTask)
             {
@@ -174,7 +192,7 @@ void TaskManager::RemoveStoppedTasks()
             else
             {
                 // all others correct the previous to remove it
-                pIteratePrev->pNext = pNext;
+                pIteratePrev->_pNext = pNext;
                 if (pIterate == _pLastTask)
                 {
                     // last one, correct our last pointer
