@@ -24,7 +24,9 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
       {};                         \
     private:                      
 
-#define TASK_DECLARE_FUNCTION virtual void 
+#define TASK_DECLARE_START virtual bool OnStart()
+#define TASK_DECLARE_STOP virtual void OnStop()
+#define TASK_DECLARE_UPDATE virtual void OnUpdate(uint32_t deltaTime)
 
 #define TASK_DECLARE_END  };
 

@@ -18,9 +18,10 @@ private:
     uint8_t AButtonCount;
     uint8_t BButtonCount;
 
-    virtual void OnStart()
+    virtual bool OnStart()
     {
         pinMode(LedPin, OUTPUT);
+        return true;
     }
 
     virtual void OnUpdate(uint32_t deltaTime)

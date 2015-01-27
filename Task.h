@@ -70,7 +70,7 @@ public:
 
 
 protected:
-    virtual void OnStart() {};
+    virtual bool OnStart() { return true; };
     virtual void OnStop() {};
     virtual void OnUpdate(uint32_t deltaTime) = 0;
 
@@ -85,8 +85,14 @@ private:
     void Start()
     {
         _remainingTime = _timeInterval;
-        OnStart();
-        _taskState = TaskState_Running;
+        if (OnStart())
+        {
+            _taskState = TaskState_Running;
+        }
+        else
+        {
+            _taskState = TaskState_Stopping;
+        }
     }
     void Stop()
     {
