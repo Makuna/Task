@@ -6,21 +6,23 @@ TASK_DECLARE_BEGIN(TaskBlinkLed)
 // put member variables here that are scoped to this object
 bool ledOn;
 
-TASK_DECLARE_FUNCTION OnStart() // optional
+TASK_DECLARE_START  // optional
 {
     // put code here that will be run when the task starts
     ledOn = false;
     pinMode(ledPin, OUTPUT);
+
+    return true;
 }
 
-TASK_DECLARE_FUNCTION OnStop() // optional
+TASK_DECLARE_STOP  // optional
 {
     // put code here that will be run when the task stops
     ledOn = false;
     digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
 }
 
-TASK_DECLARE_FUNCTION OnUpdate(uint32_t deltaTime)
+TASK_DECLARE_UPDATE 
 {
     if (ledOn)
     {

@@ -40,10 +40,11 @@ private:
     uint16_t _timer;
     ButtonState _state;
 
-    virtual void OnStart()
+    virtual bool OnStart()
     {
         pinMode(_buttonPin, INPUT_PULLUP);
         _state = ButtonState_Released;
+        return true;
     }
 
     virtual void OnUpdate(uint32_t deltaTime)

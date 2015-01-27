@@ -14,11 +14,12 @@ private:
     bool ledOn;
     const uint8_t ledPin; // const means can't change other than in constructor
 
-    virtual void OnStart() // optional
+    virtual bool OnStart() // optional
     {
         // put code here that will be run when the task starts
         ledOn = false;
         pinMode(ledPin, OUTPUT);
+        return true;
     }
 
     virtual void OnStop() // optional

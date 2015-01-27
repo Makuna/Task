@@ -1,3 +1,15 @@
+#visual micro files
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+Visual Micro/
+Release/
+Debug/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
