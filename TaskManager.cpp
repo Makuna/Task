@@ -89,6 +89,10 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             sleep_cpu(); // will sleep in this call
             sleep_disable(); 
         }
+        else
+        {
+            wdt_reset(); // keep the dog happy
+        }
     }
 }
 
