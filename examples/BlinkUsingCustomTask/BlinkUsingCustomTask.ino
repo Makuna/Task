@@ -2,9 +2,10 @@
 // This demonstrates the use of the custom Task object feature of Task library
 // It will use a custom task to blink a LED repeatedly, 
 
+#include <Arduino.h>
 
 // Pin 13 has an LED connected on most Arduino boards.
-#define LedPin 13
+#define LedPin 13 // BUILTIN_LED
 
 // include libraries
 #include <Task.h>

@@ -10,6 +10,7 @@
 //
 // Usefull information will be sent to the serial monitor
 
+#include <Arduino.h>
 
 #define AButtonPin 4
 #define BButtonPin 5

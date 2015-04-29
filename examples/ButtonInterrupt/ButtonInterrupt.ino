@@ -16,8 +16,10 @@
 //
 // usefull information is sent to the serial monitor
 
+#include <Arduino.h>
+
 // Pin 13 has an LED connected on most Arduino boards.
-#define LedPin 13
+#define LedPin 13 // BUILTIN_LED
 #define AButtonPin 4 // almost any io pin
 #define BButtonPin 5 // almost any io pin
 

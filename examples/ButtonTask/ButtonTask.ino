@@ -8,8 +8,10 @@
 // the other button turn off the on board led when it is released
 // Both will send usefull information to the serial monitor
 
+#include <Arduino.h>
+
 // Pin 13 has an LED connected on most Arduino boards.
-#define LedPin 13
+#define LedPin 13 // BUILTIN_LED
 #define AButtonPin 4
 #define BButtonPin 5
 

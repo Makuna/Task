@@ -3,6 +3,8 @@
 // It will use a custom tasks defined using the helper macros to to blink
 // a LED repeatedly, 
 
+#include <Arduino.h>
+
 // include libraries
 #include <Task.h>
 

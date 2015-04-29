@@ -1,6 +1,6 @@
 
 // Pin 13 has an LED connected on most Arduino boards.
-#define ledPin 13
+#define ledPin 13 // BUILTIN_LED
 
 TASK_DECLARE_BEGIN(TaskBlinkLed)
 // put member variables here that are scoped to this object
