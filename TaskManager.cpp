@@ -35,6 +35,7 @@ TaskManager::TaskManager() :
     wdt_disable();
 #endif
 
+    _lastTick = GetTaskTime();
 }
 
 void TaskManager::Setup()
