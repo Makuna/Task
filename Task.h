@@ -12,15 +12,7 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
-#ifndef TASK_H
-#define TASK_H
-
-#if (ARDUINO >= 100)
-#include <Arduino.h>
-#else
-#include <WProgram.h>
-#include <pins_arduino.h>
-#endif
+#pragma once
 
 // if you need finer timing resolution than a millisecond
 // then enable the below, but this will limit the max interval 
@@ -39,8 +31,9 @@ uint32_t badTaskTimeValue(void)
 #define TaskTimeToMs(t) (t / (uint32_t)TaskTimePerMs)
 #define TaskTimeToUs(t) ((uint32_t)t)
 #else
-uint32_t badTaskTimeValue(void)
-    __attribute__((error("constant is too large for 'microseconds' conversion: max is 4,294,967 milliseconds")));
+//uint32_t badTaskTimeValue(void)
+//    __attribute__((error("constant is too large for 'microseconds' conversion: max is 4,294,967 milliseconds")));
+#define badTaskTimeValue() 1
 #define TaskTimePerMs 1
 #define TaskTimeAccuracy 1
 #define GetTaskTime millis
@@ -105,5 +98,3 @@ private:
 #include "FunctionTask.h"
 #include "TaskMacros.h"
 #include "TaskManager.h"
-
-#endif

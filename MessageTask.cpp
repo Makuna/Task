@@ -12,20 +12,22 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
+#include <Arduino.h>
 #include "Task.h"
+#include "MessageTask.h"
 
-bool MessageTask::SendAsyncMessage(const Message& message)
+bool MessageTask::SendAsyncMessage(const Message& message, bool withinIsr)
 {
     bool result = false;
 
     if (message.Size <= _messageSize)
     {
-        // this maybe called from within an interrupt, so it needs to track
-        // the current state and reset that instead of blindly enabling interrupts
-        // at the end of this routine
-        uint8_t oldSREG = SREG;
-        cli();
-
+        // this maybe called from within an interrupt, so only stop them
+        // when we are not as they are already stopped in an ISR
+        if (!withinIsr)
+        {
+            noInterrupts();
+        }
         uint8_t nextIndex = (_indexBack + 1) % _queueCount;
         if (nextIndex != _indexFront)
         {
@@ -39,8 +41,10 @@ bool MessageTask::SendAsyncMessage(const Message& message)
             result = true;
             _indexBack = nextIndex;
         }
-
-        SREG = oldSREG;
+        if (!withinIsr)
+        {
+            interrupts();
+        }
     }
 
     return result;
@@ -51,8 +55,7 @@ bool MessageTask::PopMessage(uint8_t* pBuffer, uint8_t sizeBuffer)
     bool messagePopped = false;;
 
     sizeBuffer = min(sizeBuffer, _messageSize);
-
-    cli(); // stop interrupts
+    noInterrupts();
     if (_indexFront != _indexBack) // messages are present
     {
         // remove one
@@ -72,7 +75,6 @@ bool MessageTask::PopMessage(uint8_t* pBuffer, uint8_t sizeBuffer)
             messagePopped = true;
         }
     }
-    sei(); // reenable them
-
+    interrupts();
     return messagePopped;
 }

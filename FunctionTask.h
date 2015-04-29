@@ -11,9 +11,7 @@ GNU Lesser General Public License for more details.
 
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
-
-#ifndef FUNCTIONTASK_H
-#define FUNCTIONTASK_H
+#pragma once
 
 class FunctionTask : public Task
 {
@@ -34,4 +32,3 @@ private:
   }
 };
 
-#endif

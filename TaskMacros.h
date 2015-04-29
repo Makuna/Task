@@ -12,8 +12,7 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
-#ifndef TASKMACROS_H
-#define TASKMACROS_H
+#pragma once
 
 #define TASK_DECLARE_BEGIN(name) \
     class name : public Task      \
@@ -30,4 +29,3 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 
 #define TASK_DECLARE_END  };
 
-#endif

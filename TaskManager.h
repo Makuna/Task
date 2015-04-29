@@ -12,19 +12,25 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
-#ifndef TASKMANAGER_H
-#define TASKMANAGER_H
+#pragma once
 
+#if !defined(ESP8266)
 #include <avr/sleep.h>
 #include <avr/wdt.h>
+#endif
 
 class TaskManager
 {
 public:
     TaskManager();
 
+    void Setup();
+#if defined(ESP8266)
+    // void Loop(uint16_t watchdogTimeOutMs = 500);
+    void Loop();
+#else
     void Loop(uint8_t watchdogTimeOutFlag = WDTO_500MS);
-
+#endif
     void StartTask(Task* pTask);
     void StopTask(Task* pTask);
     void ResetTask(Task* pTask)
@@ -32,8 +38,12 @@ public:
         StopTask(pTask);
         StartTask(pTask);
     }
-
+#if defined(ESP8266)
+    
+#else
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
+#endif
+    
     uint32_t CurrentTaskTime()
     {
         return _lastTick;
@@ -50,4 +60,3 @@ private:
     void RemoveStoppedTasks();
 };
 
-#endif

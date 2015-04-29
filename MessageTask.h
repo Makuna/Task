@@ -12,15 +12,7 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
-#ifndef MESSAGETASK_H
-#define MESSAGETASK_H
-
-#if (ARDUINO >= 100)
-#include <Arduino.h>
-#else
-#include <WProgram.h>
-#include <pins_arduino.h>
-#endif
+#pragma once
 
 struct Message
 {
@@ -37,7 +29,7 @@ struct Message
 class MessageTask : public Task
 {
 public:
-    bool SendAsyncMessage(const Message& message);
+    bool SendAsyncMessage(const Message& message, bool withinIsr = false);
 
 protected:
     const uint8_t  _messageSize;
@@ -69,4 +61,3 @@ private:
     volatile uint8_t _indexBack;
 };
 
-#endif

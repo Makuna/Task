@@ -12,12 +12,32 @@ GNU Lesser General Public License for more details.
 See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
+#include <Arduino.h>
 #include "Task.h"
+#include "TaskManager.h"
+
+#if defined(ESP8266)
+#else
 #include <avr/power.h>
+#endif
+
+#define USE_WDT 
 
 TaskManager::TaskManager() :
         _pFirstTask( NULL ),
         _pLastTask( NULL )
+{
+#if defined(ESP8266)
+    //Esp.wdtFeed();
+    //Esp.wdtDisable();
+#else
+    wdt_reset();
+    wdt_disable();
+#endif
+
+}
+
+void TaskManager::Setup()
 {
     _lastTick = GetTaskTime();
 }
@@ -50,7 +70,12 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
+#if defined(ESP8266)
+//void TaskManager::Loop(uint16_t watchdogTimeOutMs)
+void TaskManager::Loop()
+#else
 void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
+#endif
 {
     uint32_t currentTick = GetTaskTime();
     uint32_t deltaTime = currentTick - _lastTick;
@@ -62,6 +87,16 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 
         RemoveStoppedTasks();
   
+#if defined(ESP8266)
+// Esp8266
+
+#if defined(USE_WDT)
+        //Esp.wdtFeed();
+        //Esp.wdtEnable(watchdogTimeOutMs);
+#endif
+
+#else
+// Arduino Normal
         // if the next task has more time available than the next
         // millisecond interupt, then sleep
         if (nextWakeTime > TaskTimePerMs)
@@ -70,10 +105,12 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             // due to Millis() using timer interupt at 1 ms, 
             // the cpu will be woke up by that every millisecond 
 
+#if defined(USE_WDT)
             // use watchdog timer for failsafe mode, 
             // total task update time should be less than watchdogTimeOutFlag
             wdt_reset();
             wdt_enable(watchdogTimeOutFlag);
+#endif
 
             // just sleep
             set_sleep_mode(SLEEP_MODE_IDLE);
@@ -89,19 +126,28 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             sleep_cpu(); // will sleep in this call
             sleep_disable(); 
         }
+#if defined(USE_WDT)
         else
         {
             wdt_reset(); // keep the dog happy
         }
+#endif
+#endif // Esp
     }
 }
 
+#if defined(ESP8266)
+#else
+
 void TaskManager::EnterSleep(uint8_t sleepMode)
 {
+
+
+#if defined(USE_WDT)
     // disable watchdog so it doesn't wake us up
     wdt_reset();
     wdt_disable();
-
+#endif
     // prepare sleep
     set_sleep_mode(sleepMode);
     cli();
@@ -118,10 +164,14 @@ void TaskManager::EnterSleep(uint8_t sleepMode)
     sleep_cpu(); // will sleep in this call
     sleep_disable();
 
+#if defined(USE_WDT)
     // enable watch dog after wake up
     wdt_reset();
     wdt_enable(WDTO_500MS);
+#endif
+
 }
+#endif // Esp
 
 uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
 {
