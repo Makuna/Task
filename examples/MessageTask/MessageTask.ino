@@ -25,6 +25,10 @@
 
 TaskManager taskManager;
 
+// foreward delcare functions passed to task constructors now required
+void OnHeartBeatOn(uint32_t deltaTime);
+void OnHeartBeatOff(uint32_t deltaTime);
+
 MainTask mainTask;
 ButtonTask buttonATask(&mainTask, AButtonPin); 
 ButtonTask buttonBTask(&mainTask, BButtonPin); 
