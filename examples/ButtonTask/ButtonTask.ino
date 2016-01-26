@@ -22,7 +22,10 @@
 #include "ButtonTask.h" // this implements the button task
 
 TaskManager taskManager;
+void HandleAButtonChanged(ButtonState state);
+void HandleBButtonChanged(ButtonState state);
 
+// foreward delcare functions passed to task constructors now required
 ButtonTask AButtonTask(HandleAButtonChanged, AButtonPin); 
 ButtonTask BButtonTask(HandleBButtonChanged, BButtonPin); 
 

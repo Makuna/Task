@@ -11,6 +11,10 @@ int ledPin = 13; // BUILTIN_LED
 
 TaskManager taskManager;
 
+// foreward delcare functions passed to task constructors now required
+void OnUpdateTaskLedOn(uint32_t deltaTime); 
+void OnUpdateTaskLedOff(uint32_t deltaTime);
+
 FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, MsToTaskTime(400)); // turn on the led in 400ms
 FunctionTask taskTurnLedOff(OnUpdateTaskLedOff, MsToTaskTime(600)); // turn off the led in 600ms
 

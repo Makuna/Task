@@ -46,6 +46,13 @@
 
 TaskManager taskManager;
 
+// foreward delcare functions passed to task constructors now required
+void OnAButtonChanged(ButtonState state);
+void OnBButtonChanged(ButtonState state);
+void OnUpdateTaskLedOn(uint32_t deltaTime);
+void OnUpdateTaskLedOff(uint32_t deltaTime);
+void OnAutoSleep(uint32_t deltaTime);
+
 ButtonTask AButtonTask(OnAButtonChanged, AButtonPin); 
 ButtonTask BButtonTask(OnBButtonChanged, BButtonPin); 
 FunctionTask taskTurnLedOn(OnUpdateTaskLedOn, MsToTaskTime(400)); // turn on the led in 400ms
