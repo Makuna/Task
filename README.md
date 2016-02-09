@@ -2,7 +2,9 @@
 
 Arduino Nonpreemptive multitasking library
 
-Clone this into your Arduino\Library folder.
+For the latest Arduino IDE, use the library manager to find and install "Task by Makuna" library.
+
+For older versions, you can just clone this into your Arduino\Library folder.
 
 For a good starting point at understanding the direction of this library, please read https://learn.adafruit.com/multi-tasking-the-arduino-part-1?view=all.
 This library was not based on that work though, but they share common goals.
@@ -10,6 +12,9 @@ This library was not based on that work though, but they share common goals.
 NOTE: Avoid the use of Delay in all high level code as the tasks timing should be used to replace it.
 
 ## Installing This Library
+Open the Library Manager and search for "Task by Makuna" and install
+
+## Installing This Library From GitHub
 Create a directory in your Arduino\Library folder named "Task"
 Clone (Git) this project into that folder.  
 It should now show up in the import list.
@@ -119,6 +124,11 @@ This demonstrates the use of the message passing feature of Task library.
 It will instance two custom ButtonTasks to monitor two different pins and they will send messages when they change state. It will also have tasks that provide a heartbeat message.
 
 This requires two momentary buttons attached between pins 4 & 5 and ground, you can change the pins to any digital pin 
+
+### RotaryEncoder
+This demonstrates creating a task to manage the details of rotary encoder.  The task will track a value and increment and decrement it when the encoder is rotated.  It will also provide a callback so the application can respond.  Further, it provides a debounced button callback for the encoder press feature.
+
+This requires a common rotary encoder be connected to available pins.  
 
 ## Sleep Modes (advanced feature)
 If you want to have your project to deep sleep and use less power, you can call the EnterSleep method and pass in a sleep modes as defined in Arduino header sleep.h. The default is SLEEP_MODE_PWR_DOWN if you dont provide one. 
