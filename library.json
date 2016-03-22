@@ -8,6 +8,6 @@
     "url": "https://github.com/Makuna/Task.git"
   },
   "frameworks": "arduino",
-  "platforms": "*",
+  "platforms": "*"
 }
 

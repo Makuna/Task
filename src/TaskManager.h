@@ -14,7 +14,11 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#if !defined(ESP8266)
+// must also check for arm due to Teensy incorrectly having ARDUINO_ARCH_AVR set
+#if defined(__arm__)
+#define WDTO_500MS 500
+
+#elif defined(ARDUINO_ARCH_AVR) 
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #endif
@@ -25,12 +29,8 @@ public:
     TaskManager();
 
     void Setup();
-#if defined(ESP8266)
-    // void Loop(uint16_t watchdogTimeOutMs = 500);
-    void Loop();
-#else
+    // for esp8266, its always 3.2 seconds
     void Loop(uint8_t watchdogTimeOutFlag = WDTO_500MS);
-#endif
     void StartTask(Task* pTask);
     void StopTask(Task* pTask);
     void ResetTask(Task* pTask)
@@ -38,9 +38,18 @@ public:
         StopTask(pTask);
         StartTask(pTask);
     }
-#if defined(ESP8266)
-    
-#else
+
+#if defined(ARDUINO_ARCH_ESP8266)
+    // must have GPIO16 tied to RST
+    void EnterSleep(uint32_t microSeconds, 
+        void* state = NULL, 
+        uint16_t sizeofState = 0, 
+        WakeMode mode = WAKE_RF_DEFAULT);
+    bool RestartedFromSleep(void* state = NULL,
+        uint16_t sizeofState = 0 );
+#elif defined(__arm__)
+    // Arm support for sleep not implemented yet
+#elif defined(ARDUINO_ARCH_AVR)
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
 #endif
     

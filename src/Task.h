@@ -61,6 +61,19 @@ public:
     {
     }
 
+    void setTimeInterval(uint32_t timeInterval)
+    {
+        _timeInterval = timeInterval;
+        if (_taskState == TaskState_Running)
+        {
+            _remainingTime = timeInterval;
+        }
+    }
+
+    uint32_t getTimeInterval()
+    {
+        return _timeInterval;
+    }
 
 protected:
     virtual bool OnStart() { return true; };
