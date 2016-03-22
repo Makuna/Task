@@ -13,11 +13,18 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------*/
 
 #include <Arduino.h>
+
 #include "Task.h"
 #include "TaskManager.h"
 
-#if defined(ESP8266)
-#else
+#if defined(ARDUINO_ARCH_ESP8266)
+extern "C"
+{
+#include <user_interface.h>
+}
+#elif defined(__arm__)
+
+#elif defined(ARDUINO_ARCH_AVR)
 #include <avr/power.h>
 #endif
 
@@ -27,10 +34,7 @@ TaskManager::TaskManager() :
         _pFirstTask( NULL ),
         _pLastTask( NULL )
 {
-#if defined(ESP8266)
-    //Esp.wdtFeed();
-    //Esp.wdtDisable();
-#else
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_AVR) && !defined(__arm__)
     wdt_reset();
     wdt_disable();
 #endif
@@ -71,12 +75,7 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
-#if defined(ESP8266)
-//void TaskManager::Loop(uint16_t watchdogTimeOutMs)
-void TaskManager::Loop()
-#else
 void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
-#endif
 {
     uint32_t currentTick = GetTaskTime();
     uint32_t deltaTime = currentTick - _lastTick;
@@ -87,17 +86,7 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
         uint32_t nextWakeTime = ProcessTasks(deltaTime);
 
         RemoveStoppedTasks();
-  
-#if defined(ESP8266)
-// Esp8266
-
-#if defined(USE_WDT)
-        //Esp.wdtFeed();
-        //Esp.wdtEnable(watchdogTimeOutMs);
-#endif
-
-#else
-// Arduino Normal
+ 
         // if the next task has more time available than the next
         // millisecond interupt, then sleep
         if (nextWakeTime > TaskTimePerMs)
@@ -105,6 +94,20 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             // for idle sleep mode:
             // due to Millis() using timer interupt at 1 ms, 
             // the cpu will be woke up by that every millisecond 
+
+#if defined(ARDUINO_ARCH_ESP8266)
+            // the esp8266 really doesn't have an idle mode
+#if defined(USE_WDT)
+            // use watchdog timer for failsafe mode, 
+            // total task update time should be less than watchdogTimeOutFlag
+            wdt_disable();
+            wdt_enable(watchdogTimeOutFlag);
+#endif
+
+#elif defined(__arm__)
+                // Arm support for sleep/idle not implemented yet
+
+#elif defined(ARDUINO_ARCH_AVR)
 
 #if defined(USE_WDT)
             // use watchdog timer for failsafe mode, 
@@ -126,24 +129,57 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             sei();
             sleep_cpu(); // will sleep in this call
             sleep_disable(); 
+#endif // Arduino Normal
         }
 #if defined(USE_WDT)
         else
         {
+#if !defined(__arm__) // no arm support for watchdog 
             wdt_reset(); // keep the dog happy
+#endif
         }
 #endif
-#endif // Esp
+
     }
 }
 
-#if defined(ESP8266)
-#else
+#if defined(ARDUINO_ARCH_ESP8266)
+#define RTC_MEM_SLEEP_ADDR 65 // 64 is being overwritten right now
+
+void TaskManager::EnterSleep(uint32_t microSeconds, 
+    void* state, 
+    uint16_t sizeofState, 
+    WakeMode mode)
+{
+    if (state != NULL && sizeofState > 0)
+    {
+        system_rtc_mem_write(RTC_MEM_SLEEP_ADDR, state, sizeofState);
+    }
+    ESP.deepSleep(microSeconds, mode);
+}
+
+bool TaskManager::RestartedFromSleep(void* state, uint16_t sizeofState)
+{
+    rst_info* resetInfo = ESP.getResetInfoPtr();
+    bool wasSleeping = (resetInfo && REASON_DEEP_SLEEP_AWAKE == resetInfo->reason);
+    if (wasSleeping)
+    {
+        if (state != NULL && sizeofState > 0)
+        {
+            system_rtc_mem_read(RTC_MEM_SLEEP_ADDR, state, sizeofState);
+        }
+    }
+    return wasSleeping;
+}
+
+#elif defined(__arm__)
+// Arm support for sleep not implemented yet
+
+
+#elif defined(ARDUINO_ARCH_AVR)
 
 void TaskManager::EnterSleep(uint8_t sleepMode)
 {
-
-
 #if defined(USE_WDT)
     // disable watchdog so it doesn't wake us up
     wdt_reset();
@@ -170,9 +206,8 @@ void TaskManager::EnterSleep(uint8_t sleepMode)
     wdt_reset();
     wdt_enable(WDTO_500MS);
 #endif
-
 }
-#endif // Esp
+#endif 
 
 uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
 {
@@ -192,17 +227,16 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
                 uint32_t taskDeltaTime = pIterate->_timeInterval - pIterate->_remainingTime;
                 taskDeltaTime += deltaTime;
 
-                pIterate->OnUpdate(taskDeltaTime);
-
                 // add the initial time so we don't loose any remainders
                 pIterate->_remainingTime += pIterate->_timeInterval;
-
                 // if we are still less than delta time, things are running slow
                 // so push to the next update frame
                 if (pIterate->_remainingTime <= deltaTime)
                 {
                     pIterate->_remainingTime = deltaTime + TaskTimeAccuracy;
                 }
+
+                pIterate->OnUpdate(taskDeltaTime);
             }
 
             uint32_t newRemainingTime = pIterate->_remainingTime - deltaTime;
