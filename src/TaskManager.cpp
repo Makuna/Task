@@ -34,7 +34,13 @@ TaskManager::TaskManager() :
         _pFirstTask( NULL ),
         _pLastTask( NULL )
 {
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_AVR) && !defined(__arm__)
+
+#if defined(ARDUINO_ARCH_AVR) && !defined(__arm__)
+    // make sure the watch dog is disabled during setup
+    // avoid this for Esp8266 due to it will only disable the software watchdog
+    // but leave the hardware one to fire, further this would disable all the 
+    // built in hidden watchdog feed calls that would keep it from firing and
+    // thus causing an effect of enabling the watchdog rather than disabling
     wdt_reset();
     wdt_disable();
 #endif
