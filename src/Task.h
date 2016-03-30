@@ -78,7 +78,7 @@ public:
 protected:
     virtual bool OnStart() { return true; };
     virtual void OnStop() {};
-    virtual void OnUpdate(uint32_t deltaTime) = 0;
+    virtual void OnUpdate(uint32_t deltaTime) {};
 
     uint32_t _remainingTime;
     uint32_t _timeInterval;
