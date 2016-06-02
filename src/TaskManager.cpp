@@ -28,7 +28,7 @@ extern "C"
 #include <avr/power.h>
 #endif
 
-#define USE_WDT 
+#define USE_WDT
 
 TaskManager::TaskManager() :
         _pFirstTask( NULL ),
@@ -38,7 +38,7 @@ TaskManager::TaskManager() :
 #if defined(ARDUINO_ARCH_AVR) && !defined(__arm__)
     // make sure the watch dog is disabled during setup
     // avoid this for Esp8266 due to it will only disable the software watchdog
-    // but leave the hardware one to fire, further this would disable all the 
+    // but leave the hardware one to fire, further this would disable all the
     // built in hidden watchdog feed calls that would keep it from firing and
     // thus causing an effect of enabling the watchdog rather than disabling
     wdt_reset();
@@ -81,6 +81,11 @@ void TaskManager::StopTask(Task* pTask)
     pTask->Stop();
 }
 
+TaskState TaskManager::StatusTask(Task* pTask)
+{
+    return pTask->_taskState;
+}
+
 void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 {
     uint32_t currentTick = GetTaskTime();
@@ -92,19 +97,19 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
         uint32_t nextWakeTime = ProcessTasks(deltaTime);
 
         RemoveStoppedTasks();
- 
+
         // if the next task has more time available than the next
         // millisecond interupt, then sleep
         if (nextWakeTime > TaskTimePerMs)
         {
             // for idle sleep mode:
-            // due to Millis() using timer interupt at 1 ms, 
-            // the cpu will be woke up by that every millisecond 
+            // due to Millis() using timer interupt at 1 ms,
+            // the cpu will be woke up by that every millisecond
 
 #if defined(ARDUINO_ARCH_ESP8266)
             // the esp8266 really doesn't have an idle mode
 #if defined(USE_WDT)
-            // use watchdog timer for failsafe mode, 
+            // use watchdog timer for failsafe mode,
             // total task update time should be less than watchdogTimeOutFlag
             wdt_disable();
             wdt_enable(watchdogTimeOutFlag);
@@ -116,7 +121,7 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 #elif defined(ARDUINO_ARCH_AVR)
 
 #if defined(USE_WDT)
-            // use watchdog timer for failsafe mode, 
+            // use watchdog timer for failsafe mode,
             // total task update time should be less than watchdogTimeOutFlag
             wdt_reset();
             wdt_enable(watchdogTimeOutFlag);
@@ -127,20 +132,20 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
             cli();
             sleep_enable();
 #if defined(BODSE)
-            // lower power trick 
+            // lower power trick
             // sleep_bod_disable() - i have seen this method called, but can't find it
             MCUCR |= _BV(BODS) | _BV(BODSE);  // turn on brown-out enable select
             MCUCR &= ~_BV(BODSE);        // this must be done within 4 clock cycles of above
 #endif
             sei();
             sleep_cpu(); // will sleep in this call
-            sleep_disable(); 
+            sleep_disable();
 #endif // Arduino Normal
         }
 #if defined(USE_WDT)
         else
         {
-#if !defined(__arm__) // no arm support for watchdog 
+#if !defined(__arm__) // no arm support for watchdog
             wdt_reset(); // keep the dog happy
 #endif
         }
@@ -152,9 +157,9 @@ void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
 #if defined(ARDUINO_ARCH_ESP8266)
 #define RTC_MEM_SLEEP_ADDR 65 // 64 is being overwritten right now
 
-void TaskManager::EnterSleep(uint32_t microSeconds, 
-    void* state, 
-    uint16_t sizeofState, 
+void TaskManager::EnterSleep(uint32_t microSeconds,
+    void* state,
+    uint16_t sizeofState,
     WakeMode mode)
 {
     if (state != NULL && sizeofState > 0)
@@ -197,7 +202,7 @@ void TaskManager::EnterSleep(uint8_t sleepMode)
     sleep_enable();
 
 #if defined(BODSE)
-    // lower power trick 
+    // lower power trick
     // sleep_bod_disable() - i have seen this method called, but can't find it
     MCUCR |= _BV(BODS) | _BV(BODSE);  // turn on brown-out enable select
     MCUCR &= ~_BV(BODSE);        // this must be done within 4 clock cycles of above
@@ -213,7 +218,7 @@ void TaskManager::EnterSleep(uint8_t sleepMode)
     wdt_enable(WDTO_500MS);
 #endif
 }
-#endif 
+#endif
 
 uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
 {
@@ -272,7 +277,7 @@ void TaskManager::RemoveStoppedTasks()
         {
             // Remove it
             pIterate->_taskState = TaskState_Stopped;
-            pIterate->_pNext = NULL; 
+            pIterate->_pNext = NULL;
 
             if (pIterate == _pFirstTask)
             {

@@ -18,7 +18,7 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 #if defined(__arm__)
 #define WDTO_500MS 500
 
-#elif defined(ARDUINO_ARCH_AVR) 
+#elif defined(ARDUINO_ARCH_AVR)
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #endif
@@ -33,6 +33,7 @@ public:
     void Loop(uint8_t watchdogTimeOutFlag = WDTO_500MS);
     void StartTask(Task* pTask);
     void StopTask(Task* pTask);
+    TaskState StatusTask(Task* pTask);
     void ResetTask(Task* pTask)
     {
         StopTask(pTask);
@@ -41,9 +42,9 @@ public:
 
 #if defined(ARDUINO_ARCH_ESP8266)
     // must have GPIO16 tied to RST
-    void EnterSleep(uint32_t microSeconds, 
-        void* state = NULL, 
-        uint16_t sizeofState = 0, 
+    void EnterSleep(uint32_t microSeconds,
+        void* state = NULL,
+        uint16_t sizeofState = 0,
         WakeMode mode = WAKE_RF_DEFAULT);
     bool RestartedFromSleep(void* state = NULL,
         uint16_t sizeofState = 0 );
@@ -52,7 +53,7 @@ public:
 #elif defined(ARDUINO_ARCH_AVR)
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
 #endif
-    
+
     uint32_t CurrentTaskTime()
     {
         return _lastTick;
@@ -68,4 +69,3 @@ private:
     uint32_t ProcessTasks(uint32_t deltaTime);
     void RemoveStoppedTasks();
 };
-
