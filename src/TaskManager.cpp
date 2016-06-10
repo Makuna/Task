@@ -86,7 +86,7 @@ TaskState TaskManager::StatusTask(Task* pTask)
     return pTask->_taskState;
 }
 
-void TaskManager::Loop(uint8_t watchdogTimeOutFlag)
+void TaskManager::Loop(uint16_t watchdogTimeOutFlag)
 {
     uint32_t currentTick = GetTaskTime();
     uint32_t deltaTime = currentTick - _lastTick;
