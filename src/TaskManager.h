@@ -30,7 +30,7 @@ public:
 
     void Setup();
     // for esp8266, its always 3.2 seconds
-    void Loop(uint8_t watchdogTimeOutFlag = WDTO_500MS);
+    void Loop(uint16_t watchdogTimeOutFlag = WDTO_500MS);
     void StartTask(Task* pTask);
     void StopTask(Task* pTask);
     TaskState StatusTask(Task* pTask);
