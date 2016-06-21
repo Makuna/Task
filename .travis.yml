@@ -33,7 +33,7 @@ env:
     - PLATFORMIO_CI_SRC=examples/BlinkUsingCustomTask
     - PLATFORMIO_CI_SRC=examples/BlinkUsingTaskFunction
     - PLATFORMIO_CI_SRC=examples/BlinkUsingTaskMacros
-    - PLATFORMIO_CI_SRC=examples/ButtonInterrupt
+    - PLATFORMIO_CI_SRC=examples/ButtonInterrupt PLATFORMIO_CI_BOARDS_ARGS="--board=uno --board=megaatmega2560 --board=leonardo"
     - PLATFORMIO_CI_SRC=examples/ButtonTask
     - PLATFORMIO_CI_SRC=examples/MessageTask
     - PLATFORMIO_CI_SRC=examples/RotaryEncoder
@@ -42,4 +42,4 @@ install:
     - pip install -U platformio
 
 script:
-    - platformio ci --board=uno --board=megaatmega2560 --board=esp12e --board=leonardo --lib="."
+    - if [[ $PLATFORMIO_CI_BOARDS_ARGS ]]; then bash -c 'platformio ci --lib="." $PLATFORMIO_CI_BOARDS_ARGS'; else bash -c 'platformio ci --lib="." --board=uno --board=megaatmega2560 --board=esp12e --board=leonardo'; fi
