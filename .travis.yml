@@ -42,4 +42,4 @@ install:
     - pip install -U platformio
 
 script:
-    - platformio ci --board=uno --board=megaatmega2560 --board=esp12e --lib="."
+    - platformio ci --board=uno --board=megaatmega2560 --board=esp12e --board=leonardo --lib="."
