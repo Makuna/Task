@@ -57,7 +57,8 @@ public:
     Task(uint32_t timeInterval) :
             _timeInterval(timeInterval),
             _remainingTime(0),
-            _taskState(TaskState_Stopped)
+            _taskState(TaskState_Stopped),
+            _pNext(NULL)
     {
     }
 
@@ -102,8 +103,11 @@ private:
     }
     void Stop()
     {
-        OnStop();
-        _taskState = TaskState_Stopping;
+        if (_taskState == TaskState_Running)
+        {
+            OnStop();
+            _taskState = TaskState_Stopping;
+        }
     }
 };
 
