@@ -32,7 +32,7 @@ bool MessageTask::SendAsyncMessage(const Message& message, bool withinIsr)
         if (nextIndex != _indexFront)
         {
             // copy message into queue
-            volatile uint8_t* pQueue = _pQueue + (nextIndex * _messageSize);
+            volatile uint8_t* pQueue = _pQueue + (_indexBack * _messageSize);
             const uint8_t* pMessage = (const uint8_t*)&message;
             for (uint8_t i = 0; i < message.Size; i++)
             {
