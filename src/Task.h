@@ -55,10 +55,10 @@ class Task
 {
 public:
     Task(uint32_t timeInterval) :
-            _timeInterval(timeInterval),
             _remainingTime(0),
-            _taskState(TaskState_Stopped),
-            _pNext(NULL)
+            _timeInterval(timeInterval),
+            _pNext(NULL),
+            _taskState(TaskState_Stopped)
     {
     }
 
