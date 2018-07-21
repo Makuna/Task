@@ -38,8 +38,8 @@ protected:
             uint8_t maxQueueCount = 6, 
             uint32_t loopTime = TaskTimePerMs) :
         Task(loopTime),
-        _queueCount(maxQueueCount),
         _messageSize(maxMessageSize),
+        _queueCount(maxQueueCount),
         _indexFront(0),
         _indexBack(0)
     {
