@@ -30,6 +30,9 @@ TaskTimeToUs	KEYWORD2
 TASK_DECLARE_BEGIN	KEYWORD2
 TASK_DECLARE_FUNCTION	KEYWORD2
 TASK_DECLARE_END	KEYWORD2
+setTimeInterval	KEYWORD2
+getTimeInterval	KEYWORD2
+getTaskState	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
