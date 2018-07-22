@@ -76,6 +76,11 @@ public:
         return _timeInterval;
     }
 
+    TaskState getTaskState()
+    {
+        return _taskState;
+    }
+
 protected:
     virtual bool OnStart() { return true; };
     virtual void OnStop() {};
