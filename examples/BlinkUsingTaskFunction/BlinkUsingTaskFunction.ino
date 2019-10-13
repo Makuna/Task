@@ -11,7 +11,7 @@ int ledPin = 13; // BUILTIN_LED
 
 TaskManager taskManager;
 
-// foreward delcare functions passed to task constructors now required
+// forward declare functions passed to task constructors now required
 void OnUpdateTaskLedOn(uint32_t deltaTime); 
 void OnUpdateTaskLedOff(uint32_t deltaTime);
 
@@ -32,14 +32,14 @@ void loop()
 
 void OnUpdateTaskLedOn(uint32_t deltaTime)
 {
-    digitalWrite(ledPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-    taskManager.StopTask(&taskTurnLedOn); // stop trying to turn the LED On
+    digitalWrite(ledPin, HIGH);             // turn the LED on (HIGH is the voltage level)
+    taskManager.StopTask(&taskTurnLedOn);   // stop trying to turn the LED On
     taskManager.StartTask(&taskTurnLedOff); // start the task to turn the LED off
 }
 
 void OnUpdateTaskLedOff(uint32_t deltaTime)
 {
-    digitalWrite(ledPin, LOW);    // turn the LED off by making the voltage LOW
+    digitalWrite(ledPin, LOW);             // turn the LED off by making the voltage LOW
     taskManager.StopTask(&taskTurnLedOff); // stop trying to turn the LED Off
     taskManager.StartTask(&taskTurnLedOn); // start the task to turn the LED On
 }
