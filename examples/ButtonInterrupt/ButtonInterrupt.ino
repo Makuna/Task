@@ -3,7 +3,7 @@
 // It will instance two custom ButtonTasks to monitor two different pins and call back
 // when they change state; with debouce and auto repeat support.
 // An external interrupt is tied to the buttons to wake the Arduino up on any press
-// There is two tasks implementing a LED Blink showing a "heartbeat" that can only run 
+// There are two tasks implementing a LED Blink showing a "heartbeat" that can only run 
 // when awake.
 // There is a task that will put the Arduino to a deep sleep 15 seconds after a 
 // button press.
