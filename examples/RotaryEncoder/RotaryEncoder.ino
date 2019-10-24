@@ -26,7 +26,7 @@
 
 TaskManager taskManager;
 
-// foreward delcare functions passed to task constructors now required
+// forward declare functions passed to task constructors now required
 void HandleButtonChanged(EncoderButtonState state);
 void HandleRotationChanged(int8_t rotationDelta);
 
