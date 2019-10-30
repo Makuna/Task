@@ -111,11 +111,8 @@ private:
     void Start()
     {
         _remainingTime = _timeInterval;
-        if (OnStart())
-        {
-            _taskState = TaskState_Running;
-        }
-        else
+        _taskState = TaskState_Running;
+        if (!OnStart())
         {
             _taskState = TaskState_Stopping;
         }

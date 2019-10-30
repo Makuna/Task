@@ -43,28 +43,20 @@ private:
 
     virtual void OnUpdate(uint32_t deltaTime)
     {
-        if (_activeElement >= _patternCount)
-        {
-            this->Stop();
-            return;
-        }
-
         // capture the difference in time passed versus expected
         int32_t delta = TaskTimeToMs(deltaTime) - _pattern[_activeElement].interval;
 
         // move to next element
+        _activeElement++;
         if (_repeat)
         {
-            _activeElement = (_activeElement + 1) % _patternCount;
+            _activeElement %= _patternCount; // wrap if needed
         }
-        else
+        else if (_activeElement >= _patternCount)
         {
-            _activeElement++;
-            if (_activeElement >= _patternCount)
-            {
-                this->Stop();
-                return;
-            }
+            this->Stop();
+            return;
+            
         }
         ApplyActivePatternElement(delta);
     }
