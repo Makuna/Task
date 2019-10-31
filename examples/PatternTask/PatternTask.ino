@@ -20,19 +20,24 @@
 
 TaskManager taskManager;
 
-void OnLedOn()
+class TriBlink
 {
-    digitalWrite(LedPin, LedOn);   // turn the LED on (HIGH is the voltage level)
+public:
+	static void OnAction0()
+	{
+		digitalWrite(LedPin, LedOff);   // turn the LED off (LOW is the voltage level)
+	}
+
+	static void OnAction1()
+	{
+		digitalWrite(LedPin, LedOn);   // turn the LED on (HIGH is the voltage level)
+	}
+
+	const static PatternElement  Pattern[] = {{600, 1}, {100, 0}, {300,1}, {100,0}, {150,1}, {100,0}};
+	const static bool Repeat = false;
 }
 
-void OnLedOff()
-{
-    digitalWrite(LedPin, LedOff);   // turn the LED off (LOW is the voltage level)
-}
-
-PatternElement  triBlinkPattern[] = {{600, 1}, {100, 0}, {300,1}, {100,0}, {150,1}, {100,0}};
-
-TaskPattern triBlinkTask(triBlinkPattern, countof(triBlinkPattern), OnLedOff, OnLedOn, false); 
+TaskPattern triBlinkTask<TriBlink>(); 
 
 void OnTriggerPattern(uint32_t deltaTime)
 {
