@@ -23,21 +23,23 @@ TaskManager taskManager;
 class TriBlink
 {
 public:
-	static void OnAction0()
-	{
-		digitalWrite(LedPin, LedOff);   // turn the LED off (LOW is the voltage level)
-	}
+    static void OnAction0()
+    {
+        digitalWrite(LedPin, LedOff);   // turn the LED off (LOW is the voltage level)
+    }
 
-	static void OnAction1()
-	{
-		digitalWrite(LedPin, LedOn);   // turn the LED on (HIGH is the voltage level)
-	}
+    static void OnAction1()
+    {
+        digitalWrite(LedPin, LedOn);   // turn the LED on (HIGH is the voltage level)
+    }
 
-	const static PatternElement  Pattern[] = {{600, 1}, {100, 0}, {300,1}, {100,0}, {150,1}, {100,0}};
-	const static bool Repeat = false;
-}
+    const static PatternElement  Pattern[];
+    const static bool Repeat = false;
+};
 
-TaskPattern triBlinkTask<TriBlink>(); 
+const PatternElement TriBlink::Pattern[] = {{600, 1}, {100, 0}, {300,1}, {100,0}, {150,1}, {100,0}};
+
+TaskPattern<TriBlink> triBlinkTask; 
 
 void OnTriggerPattern(uint32_t deltaTime)
 {
@@ -62,5 +64,4 @@ void loop()
 {
     taskManager.Loop();
 }
-
 

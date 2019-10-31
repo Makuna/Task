@@ -8,7 +8,7 @@ struct PatternElement
 template<class T_FEATURE> class TaskPattern : public Task
 {
 public:
-    TaskPattern() : 
+    TaskPattern() :
         Task(2),
         _activeElement(0)
     { };
@@ -19,7 +19,7 @@ private:
     virtual bool OnStart() // optional
     {
         _activeElement = 0;
-        
+
         ApplyActivePatternElement(0);
         return true;
     }
