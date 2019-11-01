@@ -1,9 +1,18 @@
-
+//
+// a PatternElement defines the milliseconds before progressing to the next 
+// action and the action to apply at the start.
+// currently it will use 15 bits for the time and 1 bit for the action
+// it could be easily extended to support more actions by changing bit counts...
+// 14 bits for time and 2 bits for action = 16.384 seconds and 4 actions 
+// 13 bits for time and 3 bits for action = 8.192 seconds and 8 actions
+//
 struct PatternElement
 {
-    uint16_t interval : 15; // milliseconds before progressing to next action
-    uint16_t action : 1; // the action to apply at the start of this element
+    uint16_t interval : 15; // milliseconds
+    uint16_t action : 1;  
 };
+
+static_assert(sizeof(PatternElement) == 2, "PatternElement expected to be 16 bits in size, please check your definition");
 
 template<class T_FEATURE> class TaskPattern : public Task
 {
@@ -18,7 +27,10 @@ private:
 
     virtual bool OnStart() // optional
     {
-        _activeElement = 0;
+        // when started, always begin at the first action
+        // you may not always want this, you may want to start and stop and 
+        // just resume the current action, if so, just comment out this next line
+        _activeElement = 0; 
 
         ApplyActivePatternElement(0);
         return true;
@@ -26,7 +38,6 @@ private:
 
     virtual void OnStop() // optional
     {
-
     }
 
     virtual void OnUpdate(uint32_t deltaTime)
@@ -38,10 +49,12 @@ private:
         _activeElement++;
         if (T_FEATURE::Repeat)
         {
-            _activeElement %= countof(T_FEATURE::Pattern); // wrap if needed
+            // wrap active pattern element if needed
+            _activeElement %= countof(T_FEATURE::Pattern); 
         }
         else if (_activeElement >= countof(T_FEATURE::Pattern))
         {
+            // we reached the last one, just stop
             this->Stop();
             return;
         }
@@ -50,14 +63,18 @@ private:
 
     void ApplyActivePatternElement(int32_t delta)
     {
-        if (T_FEATURE::Pattern[_activeElement].action)
+        switch (T_FEATURE::Pattern[_activeElement].action)
         {
-            T_FEATURE::OnAction1();
-        }
-        else
-        {
+        case 0:
             T_FEATURE::OnAction0();
+            break;
+
+        case 1:
+            T_FEATURE::OnAction1();
+            break;
+        // if you need more actions, just add them here
         }
+
         this->setTimeInterval(MsToTaskTime(T_FEATURE::Pattern[_activeElement].interval - delta));
     }
 };

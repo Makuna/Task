@@ -33,10 +33,11 @@ public:
         digitalWrite(LedPin, LedOn);   // turn the LED on (HIGH is the voltage level)
     }
 
-    const static PatternElement  Pattern[];
+    const static PatternElement  Pattern[]; // C11 doesn't allow Initialization in the class (see below)
     const static bool Repeat = false;
 };
 
+// Initialize the pattern, a cascading on time from long to short over three pulses, with the same off time
 const PatternElement TriBlink::Pattern[] = {{600, 1}, {100, 0}, {300,1}, {100,0}, {150,1}, {100,0}};
 
 TaskPattern<TriBlink> triBlinkTask; 
