@@ -14,6 +14,11 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#ifndef countof
+// handy macro that calculates the count of elements in an array
+#define countof(a) (sizeof(a) / sizeof(a[0]))
+#endif
+
 // if you need finer timing resolution than a millisecond
 // then enable the below, but this will limit the max interval 
 // to just over 70 minutes
@@ -89,6 +94,15 @@ protected:
     uint32_t _remainingTime;
     uint32_t _timeInterval;
 
+    void Stop()
+    {
+        if (_taskState == TaskState_Running)
+        {
+            OnStop();
+            _taskState = TaskState_Stopping;
+        }
+    }
+
 private:
     friend class TaskManager;
     Task* _pNext; // next task in list
@@ -97,20 +111,9 @@ private:
     void Start()
     {
         _remainingTime = _timeInterval;
-        if (OnStart())
+        _taskState = TaskState_Running;
+        if (!OnStart())
         {
-            _taskState = TaskState_Running;
-        }
-        else
-        {
-            _taskState = TaskState_Stopping;
-        }
-    }
-    void Stop()
-    {
-        if (_taskState == TaskState_Running)
-        {
-            OnStop();
             _taskState = TaskState_Stopping;
         }
     }
