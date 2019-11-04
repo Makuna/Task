@@ -2,9 +2,9 @@
 
 [![Donate](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6AA97KE54UJR4)
 
-Arduino Nonpreemptive multitasking library
+Arduino non-preemptive multitasking library
 
-NOTE: Avoid the use of Delay in all high level code as the tasks timing should be used to replace it.
+NOTE: Avoid the use of `delay()` in all high level code as the tasks timing should be used to replace it.
 
 For bugs, make sure there isn't an active issue and then create one.
 
@@ -15,10 +15,10 @@ For quick questions jump on Gitter and ask away.
 [See Wiki](https://github.com/Makuna/Task/wiki)
 
 ## Installing This Library (you just want to use it)
-Open the Library Manager and search for "Task by Makuna" and install
+Open the Library Manager and search for "Task by Makuna" and install.
 
 ## Installing This Library From GitHub (you want to contribute)
-Create a directory in your Arduino\Library folder named "Task"
+Create a directory in your Arduino\Library folder named "Task".
 Clone (Git) this project into that folder.  
 It should now show up in the import list.
 
