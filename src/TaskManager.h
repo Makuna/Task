@@ -42,14 +42,17 @@ public:
 
 #if defined(ARDUINO_ARCH_ESP8266)
     // must have GPIO16 tied to RST
-    void EnterSleep(uint32_t microSeconds,
+    void EnterSleep(uint32_t microSeconds = 0,
         void* state = NULL,
         uint16_t sizeofState = 0,
         WakeMode mode = WAKE_RF_DEFAULT);
     bool RestartedFromSleep(void* state = NULL,
         uint16_t sizeofState = 0 );
+#elif defined(ARDUINO_ARCH_ESP32)
+#error "ESP32 support for sleep not implemented yet"
 #elif defined(__arm__)
     // Arm support for sleep not implemented yet
+#error "Arm support for sleep not implemented yet"
 #elif defined(ARDUINO_ARCH_AVR)
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
 #endif

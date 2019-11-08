@@ -19,6 +19,21 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
+// Arduino has no standard for attributing methods used for ISRs
+// even though some platforms require it, so to simplify the problem
+// for end users, this provides a standard ISR_ATTR
+#if !defined(ISR_ATTR)
+
+#if defined(ARDUINO_ARCH_ESP8266) 
+#define ISR_ATTR ICACHE_RAM_ATTR
+#elif defined(ARDUINO_ARCH_ESP32)
+#define ISR_ATTR ICACHE_RAM_ATTR
+#else
+#define ISR_ATTR
+#endif
+
+#endif // !defined(ISR_ATTR)
+
 // if you need finer timing resolution than a millisecond
 // then enable the below, but this will limit the max interval 
 // to just over 70 minutes
