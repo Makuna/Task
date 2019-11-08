@@ -103,6 +103,9 @@ private:
                     _timer -= deltaTimeMs;
                 }
                 break;
+
+            case ButtonState_Released:
+                break;
             }
         }
     }

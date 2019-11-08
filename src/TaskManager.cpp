@@ -166,6 +166,10 @@ void TaskManager::EnterSleep(uint32_t microSeconds,
     {
         system_rtc_mem_write(RTC_MEM_SLEEP_ADDR, state, sizeofState);
     }
+    if (microSeconds == 0)
+    {
+        microSeconds = ESP.deepSleepMax();
+    }
     ESP.deepSleep(microSeconds, mode);
 }
 

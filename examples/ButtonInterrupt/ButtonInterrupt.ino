@@ -52,6 +52,8 @@ void OnBButtonChanged(ButtonState state);
 void OnUpdateTaskLedOn(uint32_t deltaTime);
 void OnUpdateTaskLedOff(uint32_t deltaTime);
 void OnAutoSleep(uint32_t deltaTime);
+void ISR_ATTR OnExtIntLow();
+void ISR_ATTR OnExtIntHigh();
 
 ButtonTask AButtonTask(OnAButtonChanged, AButtonPin); 
 ButtonTask BButtonTask(OnBButtonChanged, BButtonPin); 
@@ -92,7 +94,7 @@ void loop()
     taskManager.Loop();
 }
 
-void OnExtIntLow()
+void ISR_ATTR OnExtIntLow()
 {
 // required due to Mega Level to wake up
 // so we toggle it off when it happens and setup
@@ -101,7 +103,7 @@ void OnExtIntLow()
 	attachInterrupt(WakeInterruptNumber, OnExtIntHigh, HIGH);
 }
 
-void OnExtIntHigh()
+void ISR_ATTR OnExtIntHigh()
 {
 // required due to Mega Level to wake up
 // so we toggle it off when it happens and setup
