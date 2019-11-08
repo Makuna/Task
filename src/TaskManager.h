@@ -49,10 +49,11 @@ public:
     bool RestartedFromSleep(void* state = NULL,
         uint16_t sizeofState = 0 );
 #elif defined(ARDUINO_ARCH_ESP32)
-#error "ESP32 support for sleep not implemented yet"
+    // ESP32 support for sleep not implemented yet
+
 #elif defined(__arm__)
     // Arm support for sleep not implemented yet
-#error "Arm support for sleep not implemented yet"
+
 #elif defined(ARDUINO_ARCH_AVR)
     void EnterSleep(uint8_t sleepMode = SLEEP_MODE_PWR_DOWN);
 #endif

@@ -145,7 +145,8 @@ void TaskManager::Loop(uint16_t watchdogTimeOutFlag)
 #if defined(USE_WDT)
         else
         {
-#if !defined(__arm__) // no arm support for watchdog
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_ESP8266) 
+            
             wdt_reset(); // keep the dog happy
 #endif
         }
