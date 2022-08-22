@@ -21,6 +21,3 @@ Open the Library Manager and search for "Task by Makuna" and install.
 Create a directory in your Arduino\Library folder named "Task".
 Clone (Git) this project into that folder.  
 It should now show up in the import list.
-
-## Documentation
-[See Wiki](https://github.com/Makuna/Task/wiki)
