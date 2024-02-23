@@ -76,7 +76,7 @@ void HandleBButtonChanged(ButtonState state)
         digitalWrite(LedPin, LOW);   // turn the LED off (LOW is the voltage level)
 
         BButtonCount++;
-        Serial.print("B Count = ");
+        Serial.print("Released - B Count = ");
         Serial.println(BButtonCount);
     }
 }
