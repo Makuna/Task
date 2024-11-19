@@ -1,12 +1,12 @@
 // ButtonTask
-// This demonstrates the use of the custom Task object feature of Task library
+// This demonstrates the use of the custom Task object feature of Task library.
 // It will instance two custom ButtonTasks to monitor two different pins and call back
-// when they change state; with debouce and auto repeat support
-// This requires two momentary buttons attached between pins 4 & 5 and ground, you
-// can change the pins to any digital pin (analog pins may have restrictions)
-// One button will turn on the on board led when it is pressed down,
-// the other button turn off the on board led when it is released
-// Both will send usefull information to the serial monitor
+// when they change state; with debounce and auto repeat support.
+// This requires two momentary buttons attached between pins 4 & 5 and ground.
+// You can change the pins to any digital pin (analog pins may have restrictions).
+// One button will turn on the on board LED when it is pressed down and
+// the other button will turn off the on board LED when it is released.
+// Both will send useful information to the serial monitor.
 
 #include <Arduino.h>
 
@@ -25,7 +25,7 @@ TaskManager taskManager;
 void HandleAButtonChanged(ButtonState state);
 void HandleBButtonChanged(ButtonState state);
 
-// foreward delcare functions passed to task constructors now required
+// forward declare functions passed to task constructors now required
 ButtonTask AButtonTask(HandleAButtonChanged, AButtonPin); 
 ButtonTask BButtonTask(HandleBButtonChanged, BButtonPin); 
 
@@ -76,7 +76,7 @@ void HandleBButtonChanged(ButtonState state)
         digitalWrite(LedPin, LOW);   // turn the LED off (LOW is the voltage level)
 
         BButtonCount++;
-        Serial.print("B Count = ");
+        Serial.print("Released - B Count = ");
         Serial.println(BButtonCount);
     }
 }
