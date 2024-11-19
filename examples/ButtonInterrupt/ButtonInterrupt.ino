@@ -39,7 +39,7 @@
 #define WakeInterruptPin     2
 
 // include libraries
-#include <NonPremptiveTask.h>
+#include <NonPreemptiveTask.h>
 
 // include sub files
 #include "ButtonTask.h" // this implements the button task

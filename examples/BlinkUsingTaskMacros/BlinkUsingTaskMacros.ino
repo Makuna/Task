@@ -6,7 +6,7 @@
 #include <Arduino.h>
 
 // include libraries
-#include <NonPremptiveTask.h>
+#include <NonPreemptiveTask.h>
 
 // include sub files
 #include "taskBlinkLed.h"

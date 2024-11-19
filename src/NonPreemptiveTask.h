@@ -18,7 +18,7 @@ See GNU Lesser General Public License at <http://www.gnu.org/licenses/>.
 // This wrapping header is to work around an Arduino library file name
 // collision with built in files that come with some Arduino board support
 // collections.  
-// By including this unique name of <NonPremptiveTask.h> it will work around
+// By including this unique name of <NonPreemptiveTask.h> it will work around
 // this recently introduced issue and Arduino build will then correctly find
 // the task library.
 //
