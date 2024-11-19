@@ -8,7 +8,7 @@
 #define LedPin 13 // BUILTIN_LED
 
 // include libraries
-#include <Task.h>
+#include <NonPremptiveTask.h>
 
 // include sub files
 #include "taskBlinkLed.h"

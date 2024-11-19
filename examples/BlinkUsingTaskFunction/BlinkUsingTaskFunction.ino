@@ -4,7 +4,7 @@
 // which task is active and flpping the state of the LED pin
 
 #include <Arduino.h>
-#include <Task.h>
+#include <NonPremptiveTask.h>
 
 // Pin 13 has an LED connected on most Arduino boards.
 int ledPin = 13; // BUILTIN_LED

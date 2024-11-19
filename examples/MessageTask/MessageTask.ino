@@ -16,7 +16,7 @@
 #define BButtonPin 5
 
 // include libraries
-#include <Task.h>
+#include <NonPremptiveTask.h>
 
 // include sub files
 #include "Messages.h" // this is where messages are defined

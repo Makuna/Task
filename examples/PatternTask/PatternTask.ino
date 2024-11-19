@@ -1,7 +1,7 @@
 // PatternTask
 // This demonstrates the use of the custom Task object feature of Task library
 // It will use a custom task to provide a "pattern" technique to blink a LED, 
-// The blink pattern is three consective blinks that are shorter than the previous blink but
+// The blink pattern is three consecutive blinks that are shorter than the previous blink but
 // still spaced out between them by the same amount of time
 
 #include <Arduino.h>
@@ -13,7 +13,7 @@
 #define LedOff LOW
 
 // include libraries
-#include <Task.h>
+#include <NonPremptiveTask.h>
 
 // include sub files
 #include "taskPattern.h"

@@ -60,6 +60,9 @@ void TaskManager::StartTask(Task* pTask)
         // check if it has been stopped yet as it may be just stopping
         if (pTask->_taskState == TaskState_Stopped)
         {
+            Serial.print("S");
+            Serial.print(reinterpret_cast<uint32_t>(pTask), HEX);
+
             // append to the list
             if (_pFirstTask == NULL)
             {
@@ -99,11 +102,11 @@ void TaskManager::Loop(uint16_t watchdogTimeOutFlag)
         RemoveStoppedTasks();
 
         // if the next task has more time available than the next
-        // millisecond interupt, then sleep
+        // millisecond interrupt, then sleep
         if (nextWakeTime > TaskTimePerMs)
         {
             // for idle sleep mode:
-            // due to Millis() using timer interupt at 1 ms,
+            // due to Millis() using timer interrupt at 1 ms,
             // the cpu will be woke up by that every millisecond
 
 #if defined(ARDUINO_ARCH_ESP8266)
@@ -280,6 +283,9 @@ void TaskManager::RemoveStoppedTasks()
         Task* pNext = pIterate->_pNext;
         if (pIterate->_taskState == TaskState_Stopping)
         {
+            Serial.print("T");
+            Serial.print(reinterpret_cast<uint32_t>(pIterate), HEX);
+
             // Remove it
             pIterate->_taskState = TaskState_Stopped;
             pIterate->_pNext = NULL;
