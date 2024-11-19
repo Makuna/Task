@@ -19,7 +19,7 @@
 #define ButtonPin 2 // labeled as SW
 
 // include libraries
-#include <Task.h>
+#include <NonPreemptiveTask.h>
 
 // include sub files
 #include "RotaryEncoderTask.h" // this implements the rotary encoder task

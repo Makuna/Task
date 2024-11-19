@@ -77,7 +77,7 @@ public:
     Task(uint32_t timeInterval) :
             _remainingTime(0),
             _timeInterval(timeInterval),
-            _pNext(NULL),
+            _pNext(nullptr),
             _taskState(TaskState_Stopped)
     {
     }
@@ -85,10 +85,7 @@ public:
     void setTimeInterval(uint32_t timeInterval)
     {
         _timeInterval = timeInterval;
-        if (_taskState == TaskState_Running)
-        {
-            _remainingTime = timeInterval;
-        }
+        _remainingTime = timeInterval;
     }
 
     uint32_t getTimeInterval()

@@ -31,8 +31,8 @@ extern "C"
 #define USE_WDT
 
 TaskManager::TaskManager() :
-        _pFirstTask( NULL ),
-        _pLastTask( NULL )
+        _pFirstTask( nullptr ),
+        _pLastTask( nullptr )
 {
 
 #if defined(ARDUINO_ARCH_AVR) && !defined(__arm__)
@@ -61,7 +61,7 @@ void TaskManager::StartTask(Task* pTask)
         if (pTask->_taskState == TaskState_Stopped)
         {
             // append to the list
-            if (_pFirstTask == NULL)
+            if (_pFirstTask == nullptr)
             {
                 _pFirstTask = pTask;
                 _pLastTask = pTask;
@@ -71,6 +71,8 @@ void TaskManager::StartTask(Task* pTask)
                 _pLastTask->_pNext = pTask;
                 _pLastTask = pTask;
             }
+
+            _pLastTask->_pNext = nullptr;
         }
         pTask->Start();
     }
@@ -99,11 +101,11 @@ void TaskManager::Loop(uint16_t watchdogTimeOutFlag)
         RemoveStoppedTasks();
 
         // if the next task has more time available than the next
-        // millisecond interupt, then sleep
+        // millisecond interrupt, then sleep
         if (nextWakeTime > TaskTimePerMs)
         {
             // for idle sleep mode:
-            // due to Millis() using timer interupt at 1 ms,
+            // due to Millis() using timer interrupt at 1 ms,
             // the cpu will be woke up by that every millisecond
 
 #if defined(ARDUINO_ARCH_ESP8266)
@@ -163,7 +165,7 @@ void TaskManager::EnterSleep(uint32_t microSeconds,
     uint16_t sizeofState,
     WakeMode mode)
 {
-    if (state != NULL && sizeofState > 0)
+    if (state != nullptr && sizeofState > 0)
     {
         system_rtc_mem_write(RTC_MEM_SLEEP_ADDR, state, sizeofState);
     }
@@ -180,7 +182,7 @@ bool TaskManager::RestartedFromSleep(void* state, uint16_t sizeofState)
     bool wasSleeping = (resetInfo && REASON_DEEP_SLEEP_AWAKE == resetInfo->reason);
     if (wasSleeping)
     {
-        if (state != NULL && sizeofState > 0)
+        if (state != nullptr && sizeofState > 0)
         {
             system_rtc_mem_read(RTC_MEM_SLEEP_ADDR, state, sizeofState);
         }
@@ -232,7 +234,8 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
     // Update Tasks
     //
     Task* pIterate = _pFirstTask;
-    while (pIterate != NULL)
+
+    while (pIterate != nullptr)
     {
         // skip any non running tasks
         if (pIterate->_taskState == TaskState_Running)
@@ -249,23 +252,31 @@ uint32_t TaskManager::ProcessTasks(uint32_t deltaTime)
                 // so push to the next update frame
                 if (pIterate->_remainingTime <= deltaTime)
                 {
-                    pIterate->_remainingTime = deltaTime + TaskTimeAccuracy;
+                    pIterate->_remainingTime = pIterate->_timeInterval;
+                }
+                else
+                {
+                    pIterate->_remainingTime = pIterate->_remainingTime - deltaTime;
                 }
 
                 pIterate->OnUpdate(taskDeltaTime);
+                // do not modify _remainingTime here after update, as the call may
+                // change timing values completely
+            }
+            else
+            {
+                pIterate->_remainingTime = pIterate->_remainingTime - deltaTime;
             }
 
-            uint32_t newRemainingTime = pIterate->_remainingTime - deltaTime;
-            pIterate->_remainingTime = newRemainingTime;
-
-            if (newRemainingTime < nextWakeTime)
+            if (pIterate->_remainingTime < nextWakeTime)
             {
-                nextWakeTime = newRemainingTime;
+                nextWakeTime = pIterate->_remainingTime;
             }
         }
 
         pIterate = pIterate->_pNext;
     }
+
     return nextWakeTime;
 }
 
@@ -274,15 +285,15 @@ void TaskManager::RemoveStoppedTasks()
     // walk task list and remove stopped tasks
     //
     Task* pIterate = _pFirstTask;
-    Task* pIteratePrev = NULL;
-    while (pIterate != NULL)
+    Task* pIteratePrev = nullptr;
+    while (pIterate != nullptr)
     {
         Task* pNext = pIterate->_pNext;
         if (pIterate->_taskState == TaskState_Stopping)
         {
             // Remove it
             pIterate->_taskState = TaskState_Stopped;
-            pIterate->_pNext = NULL;
+            pIterate->_pNext = nullptr;
 
             if (pIterate == _pFirstTask)
             {

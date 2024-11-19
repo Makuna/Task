@@ -16,7 +16,7 @@
 #define BButtonPin 5
 
 // include libraries
-#include <Task.h>
+#include <NonPreemptiveTask.h>
 
 // include sub files
 #include "ButtonTask.h" // this implements the button task

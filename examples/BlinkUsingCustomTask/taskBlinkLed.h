@@ -5,8 +5,8 @@ class TaskBlinkLed : public Task
 public:
     TaskBlinkLed(uint8_t pin, uint32_t timeInterval) : // pass any custom arguments you need
         Task(timeInterval),
-        ledPin(pin),
-        ledOn(false)  // initialize members here
+        ledOn(false),
+        ledPin(pin)  // initialize members here
     { };
 
 private:
